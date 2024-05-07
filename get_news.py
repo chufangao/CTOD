@@ -12,7 +12,7 @@ import json
 # import datetime
 import random
 from transformers import pipeline
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, CrossEncoder
 
 sys.path.append('./GNews/')
 from gnews import GNews
@@ -201,5 +201,12 @@ if __name__ == '__main__':
                                       cache_folder='/srv/local/data/chufan2/huggingface/')
         encoded_titles = encoder.encode(titles, convert_to_numpy=True, device='cuda')
         np.save('./news_title_embeddings.npy', encoded_titles)
+
+        crossencoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-12-v2", max_length=512,
+                             cache_folder='/srv/local/data/chufan2/huggingface/')
+        scores = crossencoder.predict(
+            [("Query", "Paragraph1"), ("Query", "Paragraph2"), ("Query", "Paragraph3")]
+        )
+
 
         all_company_dfs.to_csv('./stock_news_logs/news.csv', index=False)
