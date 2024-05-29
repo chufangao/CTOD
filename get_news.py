@@ -68,8 +68,10 @@ if __name__ == '__main__':
     # pakistan_news = google_news.get_news('Pakistan')
     # print(pakistan_news[0])
 
-    # mode = 'get_news' # 'get_news' or 'process_news'
-    mode = 'process_news'
+    # mode = 'get_news' 
+    # mode = 'process_news'
+    mode = 'correspond_news_and_studies'
+    print(f'Mode: {mode}')
 
     if mode == 'get_news':
         # stock_price_df = pd.read_csv("./stock_prices_635_industries.csv").drop(columns=['Unnamed: 0'])
@@ -138,10 +140,9 @@ if __name__ == '__main__':
     # ======================== Process the news data ========================
     elif mode == 'process_news':
         print('Processing news data')
-        with open('./filtered_ticker_dict_642.pkl', 'rb') as f:
-        # with open('./ticker_dict_211.pkl', 'rb') as f:
-            ticker_dict = pickle.load(f)
-        ticker_dict = {k.lower(): v for k, v in ticker_dict.items()}
+        studies_df = pd.read_csv('./CITT/studies.txt', sep='|', low_memory=False)        
+        ticker_dict_df = pd.read_csv('stock_price/ticker_dict_642.csv')
+        ticker_dict = {row['name'].lower(): row['ticker'] for _, row in ticker_dict_df.iterrows()}
 
         all_company_dfs = []
         # for company, ticker in ticker_dict.items():
@@ -178,12 +179,14 @@ if __name__ == '__main__':
             else:
                 ticker = pd.NA
             df['ticker'] = ticker
+            df['company'] = company
             all_company_dfs.append(df)
         all_company_dfs = pd.concat(all_company_dfs)
+        # all_company_dfs.to_csv('./stock_price/news_tmp.csv', index=False); quit() # update old news.csv with company names
 
         print("Processing sentiment")
         pipe = pipeline("text-classification", model="yiyanghkust/finbert-tone", device='cuda')
-        batch_size = 256
+        batch_size = 512
 
         all_label_preds = []
         all_label_probs = []
@@ -197,16 +200,84 @@ if __name__ == '__main__':
 
         # process title embeddings using pubmedbert
         print("Processing embeddings")
-        encoder = SentenceTransformer('microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext',
-                                      cache_folder='/srv/local/data/chufan2/huggingface/')
-        encoded_titles = encoder.encode(titles, convert_to_numpy=True, device='cuda')
-        np.save('./news_title_embeddings.npy', encoded_titles)
+        encoder = SentenceTransformer('microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext', cache_folder='/srv/local/data/chufan2/huggingface/')
+        encoded_titles = encoder.encode(titles, convert_to_numpy=True, device='cuda', batch_size=batch_size)
+        np.save('./stock_price/news_title_embeddings.npy', encoded_titles)
 
-        crossencoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-12-v2", max_length=512,
-                             cache_folder='/srv/local/data/chufan2/huggingface/')
-        scores = crossencoder.predict(
-            [("Query", "Paragraph1"), ("Query", "Paragraph2"), ("Query", "Paragraph3")]
-        )
+        encoded_studies = encoder.encode(studies_df['brief_title'].tolist(), convert_to_numpy=True, device='cuda', batch_size=batch_size)
+        np.save('./stock_price/studies_title_embeddings.npy', encoded_studies)
 
+        all_company_dfs.to_csv('./stock_price/news.csv', index=False)
 
-        all_company_dfs.to_csv('./stock_news_logs/news.csv', index=False)
+        # crossencoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-12-v2", max_length=512, cache_folder='/srv/local/data/chufan2/huggingface/')
+        # scores = crossencoder.predict(
+        #     [("Query", "Paragraph1"), ("Query", "Paragraph2"), ("Query", "Paragraph3")]
+        # )
+    elif mode == 'correspond_news_and_studies':
+        crossencoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-12-v2", max_length=512)
+        encoder = SentenceTransformer('microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext', cache_folder='/srv/local/data/chufan2/huggingface/')
+
+        news_df = pd.read_csv('./stock_price/news.csv')
+        news_title_embedding = np.load('./stock_price/news_title_embeddings.npy')
+        studies = pd.read_csv('./CITT/studies.txt', sep='|', low_memory=False)
+        sponsors = pd.read_csv('./CITT/sponsors.txt', sep='|')
+        top_sponsors = pd.read_csv('stock_price/top_sponsors.csv')
+        interventions = pd.read_csv('./CITT/interventions.txt', sep='|')
+        conditions = pd.read_csv('./CITT/conditions.txt', sep='|')
+
+        sponsors = sponsors[sponsors['name'].isin(top_sponsors['name'])]
+        sponsors['name'] = sponsors['name'].str.lower()
+
+        studies = studies[studies['nct_id'].isin(sponsors['nct_id'])]
+        studies = studies[studies['nct_id'].isin(interventions['nct_id'])]
+        studies = studies[studies['nct_id'].isin(conditions['nct_id'])]
+        news_df['date'] = pd.to_datetime(news_df['date'])
+        studies['completion_date'] = pd.to_datetime(studies['completion_date'])
+        # # studies['intervention_name'] = studies['nct_id'].map(interventions.set_index('nct_id')['name'])
+        # studies_title_embedding = studies_title_embedding[studies.index.values]
+
+        # map intervention and condition to study name2
+        interventions['name'] = interventions['name'].astype(str)
+        intervention_names = interventions.groupby('nct_id')['name'].apply(lambda x: ' '.join(x)).reset_index()
+        intervention_names.columns = ['nct_id', 'intervention_name']
+        condition_names = conditions.groupby('nct_id')['name'].apply(lambda x: ' '.join(x)).reset_index()
+        condition_names.columns = ['nct_id', 'condition_name']
+        studies = pd.merge(studies, intervention_names, on='nct_id', how='left')
+        studies = pd.merge(studies, condition_names, on='nct_id', how='left')
+        studies['title2'] = studies['intervention_name'] + ' ' + studies['condition_name']
+
+        studies_title2_embedding = encoder.encode(studies['title2'], convert_to_numpy=True, device='cuda', show_progress_bar=True)
+        np.save('./stock_price/studies_title2_embeddings.npy', studies_title2_embedding)
+
+        # print(news_df.shape, news_title_embedding.shape, studies.shape, studies_title2_embedding.shape)
+        # # most relevant news for each study
+
+        # for each study, filter out news that are not within 2 year of completion date
+        top_k = 10
+        topk_cols = [f'top_{i}' for i in range(top_k, 0, -1)] + [f'top_{i}_sim' for i in range(top_k, 0, -1)]
+        studies[topk_cols] = pd.NA
+        column_ind = studies.columns.get_loc(f'top_{top_k}')
+
+        for i in trange(studies.shape[0]):
+            if studies.iloc[i]['completion_date'] is pd.NaT:
+                continue
+            # get sponsors of the study
+            sponsors_ = sponsors[sponsors['nct_id'] == studies.iloc[i]['nct_id']]['name'].tolist()
+            news_df_ = news_df[news_df['company'].isin(sponsors_)]
+            news_df_ = news_df_[
+                np.abs((news_df_['date'] - studies.iloc[i]['completion_date']).dt.days) < 365*2
+                ]
+            # print(news_df_.shape)
+            if news_df_.shape[0] == 0:
+                continue
+            news_title_embedding_ = news_title_embedding[news_df_.index]
+            
+            similarity = studies_title2_embedding[i] @ news_title_embedding_.T
+            inds = np.argsort(similarity)[-top_k:]
+            sims = crossencoder.predict([(studies.iloc[i]['title2'], news_df_.iloc[ind]['title']) for ind in inds], show_progress_bar=False)
+
+            # original inds are indices in news_df_, we need to convert them to indices in news_df
+            studies.iloc[i, column_ind:column_ind+len(inds)] = news_df_.iloc[inds].index
+            studies.iloc[i, column_ind+top_k:column_ind+top_k+len(news_df_)] = sims
+
+        studies.to_csv('./stock_price/studies_with_news.csv', index=False)
