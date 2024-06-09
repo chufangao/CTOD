@@ -111,5 +111,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-#cd /home/jp65/CTOD/trial_linkage_main_codes/main_revised
-#python get_embedding_for_trial_linkage_1_revised.py
+#1

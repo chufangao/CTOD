@@ -3,6 +3,7 @@ import glob
 from tqdm import tqdm
 import os
 import pandas as pd
+from PyHealth.pyhealth import data
 from trial_linkage_utils import map_drug_names
 from multiprocessing import Pool, cpu_count
 
@@ -183,18 +184,14 @@ def extract_features_trial_info(data_path,save_path):
     print('mapping drug names ===>')
     with open(os.path.join("./drug_mapping.json"), 'r') as f:
         drug_mapping = json.load(f)
-    # i =0
-    # for study in tqdm(trial_info):
-    #     trial_info[study] = map_drug_names(trial_info[study], drug_mapping) 
+    
+    
     study_items = list(trial_info.items())
     with Pool(cpu_count()) as pool:
-        # i=0
         for study, result in tqdm(pool.imap_unordered(map_drug_names_wrapper, [(study, drug_mapping) for study in study_items]), total=len(study_items)):
-            # i+=1
+            
             trial_info[study] = result
-            # if i==10:
-            #     break
-
+            
     print('mapping drug names done ===>')
     print('len(trial_info):',len(trial_info))
     # save trial info to json
@@ -204,10 +201,11 @@ def extract_features_trial_info(data_path,save_path):
     print('trial_info saved ===>',os.path.join(save_path, 'trial_info.json'))
 
 if __name__ == '__main__':
-    data_path = '/home/jp65/CTOD/data'
-    save_path = '/home/jp65/CTOD/trial_linkage_main_codes/main_revised'
+    data_path = None # < Path to data files folder from CITI >'/home/jp65/CTOD/data'
+    save_path = './'
+    if data_path is None:
+        raise ValueError('Please provide the path to the data files from CITI at data_path')
     extract_features_trial_info(data_path,save_path)
     
-# cd /home/jp65/CTOD/trial_linkage_main_codes/main_revised
-# python extract_trial_info.py
+# 0
         

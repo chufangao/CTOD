@@ -37,18 +37,8 @@ def get_sub_search_group(target_trial_dict, phase_trials):
                 #get intersection of intervention types
                 trial_intervention_type = list(OrderedDict.fromkeys(trial_dict['interventions']['intervention_type']))
                 intersection_intervention_type = list(set(target_intervention_type).intersection(trial_intervention_type))
-                
-                # trial_intervention_generic = list(OrderedDict.fromkeys(trial_dict['interventions']['generic_name']))
-                # trial_condition = list(OrderedDict.fromkeys(trial_dict['conditions']))
-                # condition_flag = 0
-                # # check if any condition in target_condition has a overlap with any string in trial_condition and vice versa
-                # if any([any([condition in trial_condition for trial_condition in trial_condition]) for condition in target_condition]):
-                #     condition_flag = 1
-                # elif any([any([condition in target_condition for target_condition in target_condition]) for condition in trial_condition]):
-                #     condition_flag = 1
-                
-                
-                if len(intersection_intervention_type) > 0:# and condition_flag == 1:
+       
+                if len(intersection_intervention_type) > 0:
                     if 'Drug' in target_intervention_type:
                         trial_intervention_generic = list(OrderedDict.fromkeys(trial_dict['interventions']['generic_name']))
                         # check if any generic name in target_intervention_generic has a overlap with any string in trial_intervention_generic and vice versa
@@ -57,14 +47,7 @@ def get_sub_search_group(target_trial_dict, phase_trials):
                         elif any([any([drug in target_drug for target_drug in target_intervention_generic]) for drug in trial_intervention_generic]):
                             similar_trials[trial] = trial_dict
                     else:
-                        trial_intervention_generic = list(OrderedDict.fromkeys(trial_dict['interventions']['generic_name']))
-                        if any([any([drug in trial_drug for trial_drug in trial_intervention_generic]) for drug in target_intervention_generic]):
-                            similar_trials[trial] = trial_dict
-                        elif any([any([drug in target_drug for target_drug in target_intervention_generic]) for drug in trial_intervention_generic]):
-                            similar_trials[trial] = trial_dict
                         similar_trials[trial] = trial_dict
-                
-
         return similar_trials
 
 def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_wei_list,gpu_ids,task_queue,progress_dict):
