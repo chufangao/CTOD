@@ -28,7 +28,7 @@ The resultant data frame will be saved at /<pubmed_path>/top_2_extracted_pubmed_
 
 ## 3. Get LLM Predictions
 
-- To get the LLM prediction on PubMed abstracts, provide the OpenAI API key to the get_llm_predictions.py script and run the following. Also, provide the path to the above top_2_extracted_pubmed_articles.csv and the path to save LLM predictions.
+- To get the LLM prediction on PubMed abstracts, provide the OpenAI API key to the get_llm_predictions.py script and run the following. Also, provide the path to the above top_2_extracted_pubmed_articles.csv and the path to save LLM predictions. Along with the LLM predictions, extracted statistical features from the abstracts and the QA pairs are saved in the JSON files.
 
 ```jsx
 python get_llm_predictions.py --top_2_pubmed_path <Path to top_2_extracted_pubmed_articles.csv> --save_path <Path to save LLM predictions>
