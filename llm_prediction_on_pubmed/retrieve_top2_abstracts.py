@@ -126,4 +126,3 @@ if __name__ == '__main__':
 
     main(data_path,pubmed_path)
     
-# python retrieve_top2_abstracts.py --data_path /home/jp65/CTOD/data --pubmed_path /home/jp65/CTOD

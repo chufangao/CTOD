@@ -65,4 +65,3 @@ if __name__ == '__main__':
     print('Done')
     
     
-# python clean_and_extract_final_outcomes.py --gpt_decisions_path '/home/jp65/Clinical_Trials/test_pubmed_extract/gpt_35' --top_2_pubmed_path '/home/jp65/Clinical_Trials/test_pubmed_extract/top_2_extracted_pubmed_articles.csv'

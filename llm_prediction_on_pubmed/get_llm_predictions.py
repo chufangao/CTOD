@@ -159,5 +159,3 @@ if __name__ == '__main__':
     main(top_2_pubmed_path,save_path,llm)
     
     
-#python get_llm_predictions.py --top_2_pubmed_path '/home/jp65/Clinical_Trials/test_pubmed_extract/top_2_extracted_pubmed_articles.csv' --save_path '/home/jp65/Clinical_Trials/test_pubmed_extract/gpt_35'
-# save_path = '/srv/local/data/jp65/gpt-35-decisions'
