@@ -12,6 +12,7 @@ import pickle
 import torch
 from datetime import datetime
 from collections import OrderedDict
+import argparse
 
 
 
@@ -132,18 +133,27 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
             json.dump(possible_ancestors,f)
         progress_dict[study] = 'done'
             
-        
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root_folder', type=str, default = None, help='Path to save the linkages')
+    parser.add_argument('--target_phase', type=str, default = 'Phase 2/Phase 3', help='Phase to create linkage with the previous phases. select from ["Phase 2", "Phase 2/Phase 3", "Phase 3", "Phase 4"]')
+    parser.add_argument('--embedding_path', type=str, default = None, help='Path to the embeddings folder')
+    parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
+    parser.add_argument('--gpu_ids', type=str, default= '0,1', help='List of gpu ids to use')
+    args = parser.parse_args()
+    
     set_start_method('spawn', force=True)
-    root_folder = None# < Folder to save the created linkages >
-    target_phase = 'Phase 2/Phase 3' # Phase to create linkage with the previous phases. select from ['Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
-    embedding_path = None # < Folder containing the embeddings saved for the trials >
-    num_workers = 1 # number of workers to use for creating the linkages
-    gpu_ids = [7] # list of gpu ids to use for creating the linkages
+    root_folder = args.root_folder  # < Folder to save the created linkages >
+    target_phase = args.target_phase # Phase to create linkage with the previous phases. select from ['Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
+    embedding_path = args.embedding_path # < Folder containing the embeddings saved for the trials >
+    num_workers = args.num_workers # number of workers
+    gpu_ids = args.gpu_ids.split(',') # list of gpu ids to use
     
     # features to use for linking 
-    info_list = [ 'intervention_passage','condition_passage','official_title','lead_sponsor','brief_summary']
-    info_wei_list = {'intervention_passage': 2,'condition_passage': 2,'official_title':1,'lead_sponsor':1,'brief_summary':0.5}
+    info_list = [ 'official_title','intervention_passage','brief_summary','eligibility','condition_passage']
+    info_wei_list = {'official_title': 1,'intervention_passage': 1,'brief_summary':1,'eligibility':1,'condition_passage':1}
     
     
     print(f'Creating linkage for {target_phase}')

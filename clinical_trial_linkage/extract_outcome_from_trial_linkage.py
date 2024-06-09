@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import glob
+import argparse
 
 
 def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
@@ -245,8 +246,12 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
     
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--trial_linkage_path', type=str, default=None, help='Path to the trial linkage folder containing the json files of the trial linkage')
+    args = parser.parse_args()
+    
     ### Parameters
-    trial_linkage_path = None # Path to the trial linkage folder containing the json files of the trial linkage
+    trial_linkage_path = args.trial_linkage_path # Path to the trial linkage folder containing the json files of the trial linkage
     if trial_linkage_path is None:
         raise ValueError('Please provide the path to the trial linkage folder at trial_linkage_path')
     save_path = os.path.join(trial_linkage_path,'outcome_labels') # Path to save the extracted outcome labels, a outcome_labels path in the trial linkage folder

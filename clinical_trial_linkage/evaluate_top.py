@@ -8,6 +8,7 @@ import glob
 import json
 from sklearn.metrics import cohen_kappa_score
 import os
+import argparse
 
 
 
@@ -100,10 +101,13 @@ def eval_TOP(test_pd, TOP_path,phase,test_only = True):
 
 
 if __name__ == '__main__':
-    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--trial_outcome_path', type=str, default = None, help='Path to the trial linkage outcomes saved')
+    parser.add_argument('--top_data_path', type=str, default = None, help='Path to the TOP dataset saved')
+    args = parser.parse_args()
     ## Set the paths
-    trial_outcome_path = None # < Path to the trial linkage outcomes saved >
-    top_data_path = None # < Path to the TOP dataset saved >
+    trial_outcome_path = args.trial_outcome_path # < Path to the trial linkage outcomes saved >
+    top_data_path = args.top_data_path # < Path to the TOP dataset saved >
     
     
     if trial_outcome_path is None:

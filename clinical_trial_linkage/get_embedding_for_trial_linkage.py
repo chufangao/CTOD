@@ -8,6 +8,7 @@ from sentence_transformers import SentenceTransformer, models
 from trial_linkage_utils import  create_passage
 import pickle
 import torch
+import argparse
 
 def sample_process(root_folder,gpu_ids):
 
@@ -83,10 +84,16 @@ def sample_process(root_folder,gpu_ids):
     
         
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root_folder', type=str, default = None, help='Path to save the embeddings')
+    parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
+    parser.add_argument('--gpu_ids', type=str, default= '0,1', help='List of gpu ids to use')
+    args = parser.parse_args()
+    
     set_start_method('spawn')
-    root_folder = None # < Path to save the embeddings >
-    num_workers = 2 # number of workers
-    gpu_ids = [0,1] # list of gpu ids to use
+    root_folder = args.root_folder  # < Path to save the embeddings >
+    num_workers = args.num_workers # number of workers
+    gpu_ids = args.gpu_ids.split(',') # list of gpu ids to use
     
     if root_folder is None:
         raise ValueError("Please provide a valid path to save the embeddings")

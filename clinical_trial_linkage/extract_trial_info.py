@@ -6,6 +6,7 @@ import pandas as pd
 from PyHealth.pyhealth import data
 from trial_linkage_utils import map_drug_names
 from multiprocessing import Pool, cpu_count
+import argparse
 
 def map_drug_names_wrapper(args):
     study, drug_mapping = args
@@ -200,8 +201,18 @@ def extract_features_trial_info(data_path,save_path):
         
     print('trial_info saved ===>',os.path.join(save_path, 'trial_info.json'))
 
+
+
+
 if __name__ == '__main__':
-    data_path = None # < Path to data files folder from CITI >'/home/jp65/CTOD/data'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_path', type=str, default=None, help='Path to data files folder from CITI')
+    args = parser.parse_args()
+    
+    
+    
+    
+    data_path = args.data_path # < Path to data files folder from CITI >
     save_path = './'
     if data_path is None:
         raise ValueError('Please provide the path to the data files from CITI at data_path')

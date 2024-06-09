@@ -1,3 +1,4 @@
+from ast import arg
 from re import match
 import pandas as pd
 from datetime import datetime
@@ -8,6 +9,7 @@ import json
 import os
 from datetime import timedelta
 from sentence_transformers import CrossEncoder
+import argparse
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -175,7 +177,12 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     print('Finished updating merged_all_pd with FDA approvals')
     
 if __name__ == '__main__':
-    save_path = None# Path to save the matched trials results (provide the path where the trial linkages results are saved)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--trial_linkage_path', type=str, default = None, help='Path to save the matched trials results (provide the path where the trial linkages results are saved)')
+    args = parser.parse_args()
+    
+    
+    save_path = args.trial_linkage_path # Path to save the matched trials results (provide the path where the trial linkages results are saved)
     if save_path is None:
         raise ValueError('Please provide the path to save the matched trials results (provide the path where the trial linkages results are saved)')
     merged_all_pd_path = os.path.join(save_path, 'outcome_labels','Merged_(ALL)_trial_linkage_outcome_df.csv')
