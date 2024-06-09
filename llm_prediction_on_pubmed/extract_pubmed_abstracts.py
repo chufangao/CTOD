@@ -1,49 +1,25 @@
+from tkinter import N
 from Bio import Medline
 import urllib.request as urllib
 import json
 from tqdm import tqdm
 import os
 import time
-print('extract_pubmed_abstracts.py')
-
-
-# read txt file and print out the content
-study_ref_path = '/home/jp65/CTOD/data/study_references.txt'
-
-study_ref_file = open(study_ref_path, "r").read().split('\n')
-# study_ref_file[-1]
-
-
-# extract id nct_id, pmid, reference_type and citation and store in a dictionary
-study_ref_dict = {'id':{},'nct_id':{},'pmid':{},'reference_type':{},'citation':{}} # create a dictionary with empty lists as values
-for i in range(1,len(study_ref_file)-1):
-    study_ref_dict['id'][i-1] = study_ref_file[i].split('|')[0]
-    study_ref_dict['nct_id'][i-1] = study_ref_file[i].split('|')[1]
-    study_ref_dict['pmid'][i-1] = study_ref_file[i].split('|')[2]
-    study_ref_dict['reference_type'][i-1] = study_ref_file[i].split('|')[3]
-    study_ref_dict['citation'][i-1] = study_ref_file[i].split('|')[4]
-
-
-from collections import defaultdict
-nct_id_dict = defaultdict(list) # create a dictionary with empty lists as values
-for i in range(1,len(study_ref_file)-1):
-    nct_id_dict[study_ref_file[i].split('|')[1]].append(study_ref_file[i].split('|')[2:])
-len(nct_id_dict)
+import argparse
 
 
 
-NCBI_api_key = '558a8ec64b0df1607941d0261d0a5d273308'
-MEDLINE_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed"
-MEDLINE_URL = MEDLINE_URL + "&api_key=" + NCBI_api_key
-MEDLINE_URL = MEDLINE_URL + "&rettype=medline"
-MEDLINE_TEXT_URL = MEDLINE_URL + "&retmode=text&id="
+
+
+
+
 
 def get_data(element, source):
-    """."""
-    value = source.get(element, "")
-    if isinstance(value, list):
-        value = '||'.join(value)
-    return value
+        """."""
+        value = source.get(element, "")
+        if isinstance(value, list):
+            value = '||'.join(value)
+        return value
 
 def get_all_data(article):
     """."""
@@ -72,55 +48,109 @@ def get_all_data(article):
     return article_data
 
 
-print('start')
+def main(data_path,NCBI_api_key):
+    study_ref_path = os.path.join(data_path,'study_references.txt')
+    
+    study_ref_file = open(study_ref_path, "r").read().split('\n')
+    # study_ref_file[-1]
 
-num = 0
-total = len(nct_id_dict)
-missed_nct_id = []
-for k,v in tqdm(nct_id_dict.items()):
+
+    # extract id nct_id, pmid, reference_type and citation and store in a dictionary
+    study_ref_dict = {'id':{},'nct_id':{},'pmid':{},'reference_type':{},'citation':{}} # create a dictionary with empty lists as values
+    for i in range(1,len(study_ref_file)-1):
+        study_ref_dict['id'][i-1] = study_ref_file[i].split('|')[0]
+        study_ref_dict['nct_id'][i-1] = study_ref_file[i].split('|')[1]
+        study_ref_dict['pmid'][i-1] = study_ref_file[i].split('|')[2]
+        study_ref_dict['reference_type'][i-1] = study_ref_file[i].split('|')[3]
+        study_ref_dict['citation'][i-1] = study_ref_file[i].split('|')[4]
+
+
+    from collections import defaultdict
+    nct_id_dict = defaultdict(list) # create a dictionary with empty lists as values
+    for i in range(1,len(study_ref_file)-1):
+        nct_id_dict[study_ref_file[i].split('|')[1]].append(study_ref_file[i].split('|')[2:])
+    len(nct_id_dict)
+
+
+
+    MEDLINE_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed"
+    MEDLINE_URL = MEDLINE_URL + "&api_key=" + NCBI_api_key
+    MEDLINE_URL = MEDLINE_URL + "&rettype=medline"
+    MEDLINE_TEXT_URL = MEDLINE_URL + "&retmode=text&id="
+
     
-    try:
-    #print an update to show progress as a bar for every 10% of the total
-    # if num % (total/100) == 0:
-    #     print(num//total)
-    # num += 1
+
+
+    print('start')
+    if not os.path.exists('./extracted_pubmed'):
+        os.makedirs('./extracted_pubmed')
     
-        nct_id = k
-        reference_data = {}
-        reference_data['nct_id'] = nct_id
+    num = 0
+    total = len(nct_id_dict)
+    missed_nct_id = []
+    for k,v in tqdm(nct_id_dict.items()):
         
-        reference_list = []
-        #check whether the file exists
-        if os.path.exists(f'/home/jp65/CTOD/extracted_pubmed/{nct_id}_pubmed_abs.json'):
+        try:
+        
+            nct_id = k
+            reference_data = {}
+            reference_data['nct_id'] = nct_id
+            
+            reference_list = []
+            #check whether the file exists
+            if os.path.exists(os.path.join('./extracted_pubmed',f'{nct_id}_pubmed_abs.json')):
+                continue
+            
+            for i in range(len(v)):
+                pmid= v[i][0]
+                ref_type = v[i][1]  
+                # print(nct_id, pmid, ref_type)
+                text_path = './pubmed_data.txt'
+                urllib.urlretrieve(MEDLINE_TEXT_URL + str(pmid), text_path)
+                with open(text_path, mode="r", encoding="utf-8") as handle:
+                    articles = Medline.parse(handle)
+                    for article in articles:
+                        article_data = get_all_data(article)
+                        article_data['Reference type'] = ref_type
+                        reference_list.append(article_data)
+                    handle.close()
+                
+            reference_data['References'] = reference_list
+            with open(os.path.join('./extracted_pubmed',f'{nct_id}_pubmed_abs.json'), 'w') as f:
+                json.dump(reference_data, f)
+        except:
+            missed_nct_id.append(k)
+            print(f'Error with {k}')
+            time.sleep(5)
             continue
         
-        for i in range(len(v)):
-            pmid= v[i][0]
-            ref_type = v[i][1]  
-            # print(nct_id, pmid, ref_type)
-            text_path = '/home/jp65/CTOD/pubmed_data.txt'
-            urllib.urlretrieve(MEDLINE_TEXT_URL + str(pmid), text_path)
-            with open(text_path, mode="r", encoding="utf-8") as handle:
-                articles = Medline.parse(handle)
-                for article in articles:
-                    article_data = get_all_data(article)
-                    article_data['Reference type'] = ref_type
-                    reference_list.append(article_data)
-                handle.close()
-            
-        reference_data['References'] = reference_list
-        with open(f'/home/jp65/CTOD/extracted_pubmed/{nct_id}_pubmed_abs.json', 'w') as f:
-            json.dump(reference_data, f)
-    except:
-        missed_nct_id.append(k)
-        print(f'Error with {k}')
-        time.sleep(5)
-        continue
-        
     
-    # break
 
-# reference_data
-
-#save as json
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_path', type=str, default= None, help='Path to the CITI data folder')
+    parser.add_argument('--NCBI_api_key', type=str, default= None, help='NCBI API key')
+    parser.add_argument('--save_path', type=str, default= None, help='Path to save the extracted data')
+    args = parser.parse_args()
+    
+    data_path = args.data_path
+    NCBI_api_key = args.NCBI_api_key
+    
+    if data_path is None:
+        raise ValueError('Please provide the path to the CITI data folder')
+    if NCBI_api_key is None:
+        raise ValueError('Please provide the NCBI API key')
+    if args.save_path is None:
+        raise ValueError('Please provide the path to save the extracted data')
+    
+    # change to path to save_path
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
+    os.chdir(args.save_path)
+    
+    
+    print('Extracting PubMed abstracts')
+    main(data_path,NCBI_api_key)
+    print('Done')
+    
 
