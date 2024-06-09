@@ -2,30 +2,13 @@
 from datetime import datetime
 import re
 from tqdm import tqdm
-from sentence_transformers import SentenceTransformer, util,models,CrossEncoder
+from sentence_transformers import util
 import torch
-from support_functions import parse_date
 import pickle
-import numpy as np
 import os 
-from jellyfish import jaro_winkler_similarity
-from fuzzywuzzy import fuzz
 from collections import OrderedDict
-import Levenshtein
 
-# map drug names to generic names if the intervention is a drug
-# def map_drug_names(target_phase_trial_dict,drug_mapping):
-#     generic_name_list = []
-    
-#     for i in range(len(target_phase_trial_dict['interventions']['intervention_name'])):
-#         drug_name_cleaned = clean_string(target_phase_trial_dict['interventions']['intervention_name'][i]).lower()
-#         # if target_phase_trial_dict['interventions']['intervention_type'][i] == 'Drug' and target_phase_trial_dict['interventions']['intervention_name'][i] in drug_mapping:
-#         if drug_name_cleaned in drug_mapping:
-#             generic_name_list.append(', '.join(drug_mapping[drug_name_cleaned]))
-#         else:
-#             generic_name_list.append(drug_name_cleaned)
-#     target_phase_trial_dict['interventions']['generic_name'] = generic_name_list
-#     return target_phase_trial_dict
+
 
 # map drug names to generic names if the intervention is a drug
 def map_drug_names(target_phase_trial_dict,drug_mapping):
@@ -41,12 +24,9 @@ def map_drug_names(target_phase_trial_dict,drug_mapping):
         target_phase_trial_dict['interventions']['generic_name'] = generic_name_list
         return target_phase_trial_dict
     
-    # print(target_phase_trial_dict['interventions']['intervention_name'])
-    # drug_name_list = list(set(target_phase_trial_dict['interventions']['intervention_name']))
+   
     drug_name_list = list(OrderedDict.fromkeys(target_phase_trial_dict['interventions']['intervention_name']))
 
-    # print(drug_name_list)
-    
     for i in range(len(drug_name_list)):
         # do mapping only if the intervention is a drug
         if target_phase_trial_dict['interventions']['intervention_type'][i] == 'Drug':
@@ -55,29 +35,7 @@ def map_drug_names(target_phase_trial_dict,drug_mapping):
             if drug_name == 'placebo':
                 generic_name_list.append('placebo')
                 continue
-            # # create cross encoder input with all the drugs or keys in the drug_mapping
-            # cross_encoder_input = [[drug_name, drug] for drug in drug_mapping]
-            # # get the cross encoder scores
-            # cross_encoder_scores = cross_encoder.predict(cross_encoder_input)
-            # # get the drug with the highest score
-            # max_score = max(cross_encoder_scores)
-            # if max_score >=1:
-            #     max_score_index = np.argmax(cross_encoder_scores)
-            #     max_score_drug = cross_encoder_input[max_score_index][1]
-            #     generic_name_list.append(', '.join(drug_mapping[max_score_drug]))
-            # max_score = np.inf
-            # max_score_drug = drug_name
             
-            # for drug in drug_mapping:
-            #     # score = jaro_winkler_similarity(drug_name, clean_string(drug))
-            #     score = Levenshtein.distance(drug_name, clean_string(drug))
-            #     if score < max_score:
-            #         max_score = score
-            #         max_score_drug = drug
-            
-            # if max_score < len(drug_name): #>= 0.95:  # Using 0.85 as a threshold for good similarity
-            #     print(f'{drug_name} ===> {max_score_drug}, {max_score}')
-            #     generic_name_list.append(', '.join(drug_mapping[max_score_drug]))
             flag = 0
             max_score = 0
             max_score_drug = drug_name
@@ -87,7 +45,6 @@ def map_drug_names(target_phase_trial_dict,drug_mapping):
                     max_score_drug = drug
                     flag = 1
             if flag == 1:
-                # print(f'{drug_name} ===> {max_score_drug}, {max_score}')
                 generic_name_list.append(', '.join(drug_mapping[max_score_drug]))
                 
             else:
@@ -106,10 +63,8 @@ def get_sub_search_group(target_trial_dict, phase_trials):
         target_start_date = datetime.strptime(target_start_date, datetime_format)
         
         
-        # print(target_start_date)
         target_intervention_type = list(OrderedDict.fromkeys(target_trial_dict['interventions']['intervention_type']))
         target_intervention_generic = list(OrderedDict.fromkeys(target_trial_dict['interventions']['generic_name']))
-        # target_condition = list(OrderedDict.fromkeys(target_trial_dict['conditions']))
         
         similar_trials = {}
         for trial in phase_trials:
@@ -169,44 +124,15 @@ def clean_string(text):
 def create_passage(phase_trials):
     for phase in tqdm(phase_trials):
         for study in phase_trials[phase]:
-            # change the intervention_name in the intervention description to generic name
-            # generic_intervention_description = phase_trials[phase][study]['interventions']['intervention_description']
-            # for desc_no in range(len(generic_intervention_description)):
-            #     generic_intervention_description[desc_no] = generic_intervention_description[desc_no].replace(phase_trials[phase][study]['interventions']['intervention_name'][desc_no],phase_trials[phase][study]['interventions']['generic_name'][desc_no])
             
             #Intervention String
-            # phase_trials[phase][study]['intervention_passage'] = f'''Intervention Type: {', '.join(phase_trials[phase][study]['interventions']['intervention_type'])} | Intervention Name (Generic): {', '.join(phase_trials[phase][study]['interventions']['generic_name'])}'''# | Intervention Description: {generic_intervention_description}'''
             drug_name_list = list(OrderedDict.fromkeys(phase_trials[phase][study]['interventions']['generic_name']))
             phase_trials[phase][study]['intervention_passage'] = f'''{', '.join(drug_name_list)}'''
             # Condition String
             condition_list = list(OrderedDict.fromkeys(phase_trials[phase][study]['conditions']))
             phase_trials[phase][study]['condition_passage'] = f'''{', '.join(condition_list)}'''
             
-            intervention_description_list = list(OrderedDict.fromkeys(phase_trials[phase][study]['interventions']['intervention_description']))
-            phase_trials[phase][study]['intervention_description_passage'] = f'''{', '.join(intervention_description_list)}'''
-            
-            # Lead sponsor, official title
-            
     return phase_trials
-
-# def create_passage_2(phase_trials):
-#     for study in phase_trials:
-#         # change the intervention_name in the intervention description to generic name
-#         # generic_intervention_description = phase_trials[phase][study]['interventions']['intervention_description']
-#         # for desc_no in range(len(generic_intervention_description)):
-#         #     generic_intervention_description[desc_no] = generic_intervention_description[desc_no].replace(phase_trials[phase][study]['interventions']['intervention_name'][desc_no],phase_trials[phase][study]['interventions']['generic_name'][desc_no])
-        
-#         #Intervention String
-#         # phase_trials[phase][study]['intervention_passage'] = f'''Intervention Type: {', '.join(phase_trials[phase][study]['interventions']['intervention_type'])} | Intervention Name (Generic): {', '.join(phase_trials[phase][study]['interventions']['generic_name'])}'''# | Intervention Description: {generic_intervention_description}'''
-        
-#         phase_trials[study]['intervention_passage'] = f'''{', '.join(phase_trials[study]['interventions']['generic_name'])}'''
-#         # Condition String
-#         phase_trials[study]['condition_passage'] = f'''{', '.join(phase_trials[study]['conditions'])}'''
-        
-#         # Lead sponsor, official title
-        
-#     return phase_trials
-
 
 def create_connected_phase_dict(phase_trials, phase_connect):
     combined_search_space = {}
@@ -236,8 +162,6 @@ def get_top_k_ancestors(target_trial_dict,study, sub_search_trials,embedding_pat
     target_info_list =  [target_trial_dict[info].lower() for info in info_list]
     target_embeddings = pickle.load(open(os.path.join(embedding_path, study + '.pkl'), 'rb'))
     # concat the target embeddings to tensor
-    # for info in info_list:
-    #     print(f'{info} shape: {target_embeddings[f"{info}_embedding"].shape}')
     embed_list = []
     for info in info_list:
         if target_embeddings[f'{info}_embedding'].shape[0] == 0:
@@ -247,9 +171,6 @@ def get_top_k_ancestors(target_trial_dict,study, sub_search_trials,embedding_pat
     
     
     target_embeddings = torch.cat(embed_list, dim=0)
-    # print(f'target embeddings shape: {target_embeddings.shape}')
-    
-    # print(target_embeddings.shape)
     
     # create batches of sub_search_trials 
      #2048
@@ -294,24 +215,8 @@ def get_top_k_ancestors(target_trial_dict,study, sub_search_trials,embedding_pat
         top_k_trials[trial]['cross_encoder_score'] = cross_encoder_scores[i].item()
     
     
-    
-    
-    # # plot the histogram of cross encoder scores
-    # plt.figure()
-    # plt.hist([top_k_trials[trial]['cross_encoder_score'] for trial in top_k_trials])
-    
     # Sort the trials based on cross encoder score and select top 5
     top_k_trials = dict(sorted(top_k_trials.items(), key=lambda x: x[1]['cross_encoder_score'], reverse=True)[:top_k])
-    
-    
-    # # if len(info_list)==1
-    # if len(info_list) == 1:
-    #     if all([top_k_trials[trial]['cross_encoder_score'] < 0.5 for trial in top_k_trials]):
-    #         top_k_trials = {trial: top_k_trials[trial] for trial in top_k_trials}
-    #     else:
-    #         # remove the trials with cross encoder score less than 0.5
-    #         top_k_trials = {trial: top_k_trials[trial] for trial in top_k_trials if top_k_trials[trial]['cross_encoder_score'] >= 0.5}
-            
     
     # # if all the top_k trials have cross encoder score less than 0, then return all the trials
     # else:

@@ -6,7 +6,7 @@ import datetime
 import re
 import openai
 import datetime
-from sentence_transformers import SentenceTransformer, util,models
+from sentence_transformers import util
 
 
 # study info 
@@ -38,28 +38,6 @@ def extract_study_basic_info(data_path, info_to_extract = ['official_title','sta
                 trial_info[nct_id][info] = study[columns.index(info)]
     return trial_info
 
-# def parse_date(date_string):
-#     # Check and handle month range format (e.g., 2010 May-Jun)
-#     # print(date_string)
-#     if '-' in date_string:
-#         year, months = date_string.split(' ', 1)
-#         start_month, _ = months.split('-', 1)
-#         # Reconstruct date string to represent the start of the range
-#         date_string = f"{year} {start_month}"
-#     # print(date_string)
-#     try:
-#         # Try parsing with the format including the day
-#         return datetime.datetime.strptime(date_string, '%Y %b %d')
-#     except ValueError:
-#         # If it fails, try parsing without the day
-#         try:
-#             return datetime.datetime.strptime(date_string, '%Y %b')
-#         except ValueError:
-#             try:
-#                 return datetime.datetime.strptime(date_string, '%Y')
-#             except ValueError as e:
-#                 # If both attempts fail, re-raise the error
-#                 raise ValueError("Date string does not match expected formats ('%Y %b %d' or '%Y %b')") from e
 def parse_date(date_string):
 
     # Check and handle month range format (e.g., 2010 May-Jun)

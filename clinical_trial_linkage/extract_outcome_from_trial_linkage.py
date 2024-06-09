@@ -10,9 +10,6 @@ import pickle
 import glob
 
 
-
-### 
-
 def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -101,8 +98,7 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
         path_to_trial_key = os.path.join(trial_linkage_path, key)
         list_of_phase_file = glob.glob(f'{path_to_trial_key}/*.json')
         
-        # checking is the file names matches the number of trials in the phase
-        # assert len(list_of_phase_file) == len(phase_trials[phase])
+
         
         print(f'Extracting adjacency matrix and edge values for {phase}')
         for file in tqdm(list_of_phase_file):
@@ -250,14 +246,12 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
 
 if __name__ == '__main__':
     ### Parameters
-    # save_path = '/srv/local/data/jp65//srv/local/data/jp65/trial_linkage_(official_title_intervention_brief_summary_eligibility_condition_lead_sponsor)/outcome_labels'
-    save_path = '/srv/local/data/jp65/trial_linkage_(official_title2_intervention2_brief_summary1_eligibility1_condition2_lead_sponsor_(only_4,2))/outcome_labels'
-    # '/srv/local/data/jp65/trial_linkage_5_feat_(no_eligibility)_wei_2_2_1_1_half/outcome_labels' #'/home/jp65/CTOD/results/trial_linkage/Extracted_graphs'#'/srv/local/data/jp65/trial_linkage/Extracted_graphs'#'/home/jp65/CTOD/results/trial_linkage/Extracted_graphs'
-    trial_linkage_path = '/srv/local/data/jp65/trial_linkage_(official_title2_intervention2_brief_summary1_eligibility1_condition2_lead_sponsor_(only_4,2))'
-    # '/srv/local/data/jp65/trial_linkage_5_feat_(no_eligibility)_wei_2_2_1_1_half'#'/home/jp65/CTOD/results/trial_linkage'#'/srv/local/data/jp65/trial_linkage_2'
+    trial_linkage_path = None # Path to the trial linkage folder containing the json files of the trial linkage
+    if trial_linkage_path is None:
+        raise ValueError('Please provide the path to the trial linkage folder at trial_linkage_path')
+    save_path = os.path.join(trial_linkage_path,'outcome_labels') # Path to save the extracted outcome labels, a outcome_labels path in the trial linkage folder
     print(f'Extracting outcome labels for trial linkage from {trial_linkage_path} to {save_path}')
     get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path)
     
 
-# cd /home/jp65/CTOD/trial_linkage_main_codes/main_revised
-# python extract_outcome_from_trial_linkage_3.py
+# 3

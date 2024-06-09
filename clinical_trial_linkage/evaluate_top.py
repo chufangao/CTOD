@@ -102,21 +102,20 @@ def eval_TOP(test_pd, TOP_path,phase,test_only = True):
 if __name__ == '__main__':
     
     ## Set the paths
-    #trial_linkage_(official_title_intervention_brief_summary_eligibility_condition_lead_sponsor)
-    experiment = 'trial_linkage_(official_title2_intervention2_brief_summary1_eligibility1_condition2_lead_sponsor_(only_4,2))'
-    print(f'Experiment: {experiment}')
-    linkage_pd_path =  f'/srv/local/data/jp65/{experiment}/outcome_labels/Merged_(ALL)_trial_linkage_outcome_df.csv'
-    # linkage_pd_path = '/srv/local/data/jp65/trial_linkage_(official_title_intervention_brief_summary_eligibility_condition)/outcome_labels/Merged_(ALL)_trial_linkage_outcome_df_FDA_updated.csv'
-    top_data_path = '/home/jp65/CTOD/HINT_eval'
-    save_path = f'./results/feat_ablation_new/{experiment}/'
+    trial_outcome_path = None # < Path to the trial linkage outcomes saved >
+    top_data_path = None # < Path to the TOP dataset saved >
+    
+    
+    if trial_outcome_path is None:
+        raise ValueError('Please provide the path to the trial linkage outcomes saved')
+    linkage_pd_path =  os.path.join(trial_outcome_path,'outcome_labels','Merged_(ALL)_trial_linkage_outcome_df_FDA_updated.csv')
+    if top_data_path is None:
+        raise ValueError('Please provide the path to the TOP dataset saved')
+    
+    save_path = f'./results/'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    
-    
-    
-    
-    
-    
+
     linkage_pd = pd.read_csv(linkage_pd_path)
     
     ### Results for trial linkage outcomes test split
@@ -155,5 +154,4 @@ if __name__ == '__main__':
     results.to_csv(os.path.join(save_path,'trial_linkage_TOP_train_valid_test_split_results.csv'),index=False)
     
     
-# cd /home/jp65/CTOD/trial_linkage_main_codes/main_revised
-# python evaluate_top_5.py
+# 5

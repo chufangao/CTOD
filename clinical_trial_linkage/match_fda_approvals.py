@@ -6,7 +6,6 @@ import numpy as np
 from tqdm import tqdm
 import json
 import os
-from multiprocessing import Pool, Manager
 from datetime import timedelta
 from sentence_transformers import CrossEncoder
 
@@ -69,97 +68,6 @@ def match_FDA_approval_to_trials(approval_dict, similar_trials,cross_encoder):
     matched_trials_applicant = matched_trials.loc[matched_trials['days_diff'].idxmin(), 'nctid']
     
     return matched_trials_applicant
-
-
-#### this is the good function without cross encoder
-# def match_FDA_approval_to_trials(approval_dict, similar_trials):
-#     ingredient = approval_dict['Ingredient'].lower()
-#     applicant  = approval_dict['Applicant'].lower()
-#     trade_name = approval_dict['Trade_Name'].lower()
-#     fda_approval_date = pd.to_datetime(approval_dict['Approval_Date'], format="%Y-%m-%d")
-    
-#     # Ensure each element in the columns is a string
-#     similar_trials['generic_name'] = similar_trials['generic_name'].apply(lambda x: ' '.join(x).lower() if isinstance(x, list) else x.lower())
-#     similar_trials['intervention_name'] = similar_trials['intervention_name'].apply(lambda x: ' '.join(x).lower() if isinstance(x, list) else x.lower())
-
-#     # Filter using ingredient in intervention generic name
-#     matched_trials = similar_trials[similar_trials['generic_name'].apply(lambda x: ingredient in x)]
-#     # matched_trials_2 = similar_trials[similar_trials['intervention_name'].apply(lambda x: ingredient in x)]
-#     # matched_trials_3 = similar_trials[similar_trials['generic_name'].apply(lambda x: x in ingredient)]
-#     # print(matched_trials.head(), matched_trials_2.head(), matched_trials_3.head())
-#     # Combine the matched trials
-#     # print(similar_trials.shape)
-#     # print(matched_trials.shape, matched_trials_2.shape, matched_trials_3.shape)
-#     # matched_trials = pd.merge(matched_trials, matched_trials_2, how='left', on='nctid')
-#     # # print(matched_trials.shape)
-#     # matched_trials = pd.merge(matched_trials, matched_trials_3, how='left', on='nctid')
-#     # print(matched_trials.shape)
-    
-
-#     if matched_trials.empty:
-#         return ''
-    
-#     # Convert completion dates once
-#     matched_trials['completion_date'] = pd.to_datetime(matched_trials['completion_date'], format="%Y-%m-%d", errors='coerce')
-#     # Calculate the difference in days directly
-#     matched_trials['days_diff'] = (fda_approval_date - matched_trials['completion_date']).dt.days
-    
-#     # Filter out rows where days_diff is negative
-#     matched_trials = matched_trials[matched_trials['days_diff'] >= 0]
-    
-#     if matched_trials.empty:
-#         return ''
-    
-#     # Get the trial with the smallest non-negative days_diff
-#     matched_trials_applicant = matched_trials.loc[matched_trials['days_diff'].idxmin(), 'nctid']
-    
-#     return matched_trials_applicant
-
-# def match_FDA_approval_to_trials(approval_dict, similar_trials):
-#     ingredient = approval_dict['Ingredient'].lower()
-#     applicant  = approval_dict['Applicant'].lower()
-#     trade_name = approval_dict['Trade_Name'].lower()
-#     fda_approval_date = pd.to_datetime(approval_dict['Approval_Date'], format="%Y-%m-%d")
-    
-#     # Filter using ingredient in intervention generic name
-#     matched_trials = similar_trials[similar_trials['generic_name'].apply(lambda x: any(ingredient in s.lower() for s in x))]
-#     matched_trials_2 = similar_trials[similar_trials['intervention_name'].apply(lambda x: any(ingredient in s.lower() for s in x))]
-#     matched_trials_3 = similar_trials[similar_trials['generic_name'].apply(lambda x: any(s.lower() in ingredient for s in x))]
-    
-#     # combine the matched trials
-#     print(similar_trials.shape)
-#     print(matched_trials.shape, matched_trials_2.shape, matched_trials_3.shape)
-#     matched_trials = pd.merge(matched_trials, matched_trials_2, how='left')
-#     print(matched_trials.shape)
-#     matched_trials = pd.merge(matched_trials, matched_trials_3, how='left')
-#     print(matched_trials.shape)
-    
-    
-    
-#     if matched_trials.empty:
-#         return ''
-    
-#     # # calculate jaro winkler similarity for applicant and lead_sponsor
-#     # matched_trials['applicant_similarity'] = matched_trials['lead_sponsor'].apply(lambda x: jaro_winkler_similarity(applicant, x.lower()))
-#     # # get the trial with the highest similarity
-#     # matched_trials_applicant = matched_trials.loc[matched_trials['applicant_similarity'].idxmax(), 'nctid']
-    
-    
-#     # Convert completion dates once
-#     matched_trials['completion_date'] = pd.to_datetime(matched_trials['completion_date'], format="%Y-%m-%d", errors='coerce')
-#     # Calculate the difference in days directly
-#     matched_trials['days_diff'] = (fda_approval_date - matched_trials['completion_date']).dt.days
-    
-#     # Filter out rows where days_diff is negative
-#     matched_trials = matched_trials[matched_trials['days_diff'] >= 0]
-    
-#     if matched_trials.empty:
-#         return ''
-    
-#     # Get the trial with the smallest non-negative days_diff
-#     matched_trials_applicant = matched_trials.loc[matched_trials['days_diff'].idxmin(), 'nctid']
-    
-#     return matched_trials_applicant
 
 
 def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
@@ -267,10 +175,10 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     print('Finished updating merged_all_pd with FDA approvals')
     
 if __name__ == '__main__':
-    save_path = '/srv/local/data/jp65/trial_linkage_5_feat_(no_eligibility)_wei_2_2_1_1_half'
-    # /srv/local/data/jp65/trial_linkage_(official_title_intervention_brief_summary_eligibility_condition)/outcome_labels/Merged_(ALL)_trial_linkage_outcome_df.csv
-    merged_all_pd_path = '/srv/local/data/jp65/trial_linkage_5_feat_(no_eligibility)_wei_2_2_1_1_half/outcome_labels/Merged_(ALL)_trial_linkage_outcome_df.csv'
-    # merged_all_pd_path = '/srv/local/data/jp65/trial_linkage_(official_title_intervention_brief_summary_eligibility_condition)/outcome_labels/Merged_(ALL)_trial_linkage_outcome_df.csv'
+    save_path = None# Path to save the matched trials results (provide the path where the trial linkages results are saved)
+    if save_path is None:
+        raise ValueError('Please provide the path to save the matched trials results (provide the path where the trial linkages results are saved)')
+    merged_all_pd_path = os.path.join(save_path, 'outcome_labels','Merged_(ALL)_trial_linkage_outcome_df.csv')
     device = 'cuda'
     cross_encoder = CrossEncoder(model_name='cross-encoder/ms-marco-MiniLM-L-12-v2', device=device)
 
@@ -278,6 +186,4 @@ if __name__ == '__main__':
     print(f'Matching FDA approvals to trials and updating the merged_all_pd at {merged_all_pd_path}')
     match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder)
     
-# conda activate surv_llm
-# cd /home/jp65/CTOD/trial_linkage_main_codes/main_revised
-#python match_fda_approvals_4.py
+# 4

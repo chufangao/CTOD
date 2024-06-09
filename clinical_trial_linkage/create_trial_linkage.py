@@ -7,48 +7,13 @@ import os
 import pandas as pd
 from multiprocessing import Process, set_start_method, get_context, Queue, Manager
 from sentence_transformers import SentenceTransformer, util, models, CrossEncoder
-from trial_linkage_utils import create_passage, create_connected_phase_dict,get_top_k_ancestors
+from trial_linkage_utils import create_passage, create_connected_phase_dict,get_top_k_ancestors, get_sub_search_group
 import pickle
 import torch
 from datetime import datetime
 from collections import OrderedDict
 
-def get_sub_search_group(target_trial_dict, phase_trials):
-        datetime_format = "%Y-%m-%d"
-        target_start_date = target_trial_dict['start_date']
-        target_start_date = datetime.strptime(target_start_date, datetime_format)
-        
-        
-        # print(target_start_date)
-        target_intervention_type = list(OrderedDict.fromkeys(target_trial_dict['interventions']['intervention_type']))
-        target_intervention_generic = list(OrderedDict.fromkeys(target_trial_dict['interventions']['generic_name']))
-        # target_condition = list(OrderedDict.fromkeys(target_trial_dict['conditions']))
-        
-        similar_trials = {}
-        for trial in phase_trials:
-            trial_dict = phase_trials[trial]
-            
-            if trial_dict['completion_date'] == '':
-                continue
-            trial_completion_date = trial_dict['completion_date']
-            trial_completion_date = datetime.strptime(trial_completion_date, datetime_format)
-            
-            if trial_completion_date <= target_start_date:
-                #get intersection of intervention types
-                trial_intervention_type = list(OrderedDict.fromkeys(trial_dict['interventions']['intervention_type']))
-                intersection_intervention_type = list(set(target_intervention_type).intersection(trial_intervention_type))
-       
-                if len(intersection_intervention_type) > 0:
-                    if 'Drug' in target_intervention_type:
-                        trial_intervention_generic = list(OrderedDict.fromkeys(trial_dict['interventions']['generic_name']))
-                        # check if any generic name in target_intervention_generic has a overlap with any string in trial_intervention_generic and vice versa
-                        if any([any([drug in trial_drug for trial_drug in trial_intervention_generic]) for drug in target_intervention_generic]):
-                            similar_trials[trial] = trial_dict
-                        elif any([any([drug in target_drug for target_drug in target_intervention_generic]) for drug in trial_intervention_generic]):
-                            similar_trials[trial] = trial_dict
-                    else:
-                        similar_trials[trial] = trial_dict
-        return similar_trials
+
 
 def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_wei_list,gpu_ids,task_queue,progress_dict):
     set_start_method('spawn', force=True)
@@ -74,7 +39,7 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
 
     cross_encoder = CrossEncoder(model_name='cross-encoder/ms-marco-MiniLM-L-12-v2', device=device)
 
-    with open('/home/jp65/CTOD/trial_linkage_main_codes/main_revised/trial_info.json', 'r') as f:
+    with open('./trial_info.json', 'r') as f:
         trial_info = json.load(f)
 
     # 1) Separate the trials into groups based on phase and map the intervention names to generic names
@@ -138,8 +103,6 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
     while not task_queue.empty():
         study = task_queue.get()
     
-    # for study in tqdm(phase_trials[target_phase]):
-        # try:
         if os.path.exists(os.path.join(root_folder, save_target_phase, f'{study}.json')):
             progress_dict[study] = 'done'
             continue
@@ -168,40 +131,35 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
         with open(os.path.join(root_folder,save_target_phase,study + '.json'), 'w') as f:
             json.dump(possible_ancestors,f)
         progress_dict[study] = 'done'
-            # break
-        # except Exception as e:
-        #     print(f'Error in {study} : {e}')
-        #     progress_dict[study] = 'done'
-        #     continue
+            
         
 def main():
     set_start_method('spawn', force=True)
-    # data_path = '/home/jp65/CTOD/data'
-    # root_folder = '/srv/local/data/jp65/trial_linkage_5_feat_(no_eligibility)_wei_2_2_1_1_half'
-    root_folder = '/srv/local/data/jp65/trial_linkage_(official_title2_intervention2_brief_summary1_eligibility1_condition2_lead_sponsor_(only_4,2))'
-    if not os.path.exists(root_folder):
-        os.makedirs(root_folder)
-    target_phase = 'Phase 2/Phase 3' #'Phase 2/Phase 3' #'Phase 2'
-    embedding_path = '/srv/local/data/jp65/trial_linkage_6_feat_embeddings_revised'
-
-    # features to use for linking
+    root_folder = None# < Folder to save the created linkages >
+    target_phase = 'Phase 2/Phase 3' # Phase to create linkage with the previous phases. select from ['Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
+    embedding_path = None # < Folder containing the embeddings saved for the trials >
+    num_workers = 1 # number of workers to use for creating the linkages
+    gpu_ids = [7] # list of gpu ids to use for creating the linkages
     
-    ## main label : best for now
-    info_list = [ 'official_title','intervention_passage','brief_summary','eligibility','condition_passage']#,'lead_sponsor']#,'eligibility']
-    info_wei_list = {'official_title': 2,'intervention_passage': 2,'brief_summary':1,'eligibility':1,'condition_passage':2}#,'lead_sponsor':2}
-    ##
+    # features to use for linking 
+    info_list = [ 'intervention_passage','condition_passage','official_title','lead_sponsor','brief_summary']
+    info_wei_list = {'intervention_passage': 2,'condition_passage': 2,'official_title':1,'lead_sponsor':1,'brief_summary':0.5}
     
-    # info_list = [ 'lead_sponsor']#, 'intervention_passage','official_title','lead_sponsor','brief_summary']#,'eligibility']
-    # info_wei_list = {'lead_sponsor': 1}#, 'intervention_passage': 2, 'official_title': 1, 'lead_sponsor': 1, 'brief_summary': 0.5}
-
+    
     print(f'Creating linkage for {target_phase}')
     print(f'Using features: {info_list}')
     print(f'Using feature weights: {info_wei_list}')
-    # ['Early Phase 1', 'Phase 1', 'Phase 1/Phase 2', 'Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
-    num_workers = 1
-    gpu_ids = [7]
     
-    with open('/home/jp65/CTOD/trial_linkage_main_codes/main_revised/trial_info.json', 'r') as f:
+    
+    
+    if root_folder is None:
+        raise ValueError('Please provide a folder to save the linkages at root_folder')
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
+    if embedding_path is None:
+        raise ValueError('Please provide the folder containing the embeddings at embedding_path')
+    
+    with open('./trial_info.json', 'r') as f:
         trial_info = json.load(f)
 
     task_queue = Queue()
@@ -234,7 +192,4 @@ if __name__ == '__main__':
     main()
 
 
-# conda activate surv_llm
-#cd /home/jp65/CTOD/trial_linkage_main_codes/main_revised/
-
-#python create_trial_linkage_2_revised_efficient_new_idea_test.py
+#2
