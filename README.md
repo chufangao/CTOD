@@ -1,6 +1,6 @@
 # CTO
 
-Code for CTOD: A Large Clinical Trial Outcome and QA Dataset
+Code for CTO: A Large Clinical Trial Outcome and QA Dataset
 
 Zenodo Link: Supplementary data files and predicted labels https://zenodo.org/records/11535961
 
