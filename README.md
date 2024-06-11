@@ -2,7 +2,7 @@
 
 Code for CTO: A Large Clinical Trial Outcome and QA Dataset
 
-Zenodo Link: Supplementary data files and predicted labels https://zenodo.org/records/11535961
+Zenodo Link: Supplementary data files and predicted labels https://zenodo.org/doi/10.5281/zenodo.11535960
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11535960.svg)](https://doi.org/10.5281/zenodo.11535960)
 
