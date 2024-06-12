@@ -6,6 +6,11 @@
 
 - Download the [FDA orange book](https://www.fda.gov/media/76860/download?attachment) and save it to ./FDA_approvals/.  Currently, we provide the downloaded version as of 2024-04, which was used to create our dataset. Refer [https://www.fda.gov/drugs/drug-approvals-and-databases/orange-book-data-files](https://www.fda.gov/drugs/drug-approvals-and-databases/orange-book-data-files) for additional details on the FDA orange book.
 - Download the trial dataset from CITI <path>. If it has already been downloaded, provide the path to the data in the scripts.
+- We have provided the drug mapping dictionary to map the drug names to their generic names at drug_mapping.json. Additionally, to reproduce the mapping dictionary and extract from the updated drug bank database, run the following:
+```jsx
+
+python create_drug_mapping.py
+```
 
 ## 1. Extract trial info and save trial embeddings
 
