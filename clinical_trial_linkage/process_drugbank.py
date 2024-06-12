@@ -73,7 +73,7 @@ for i in trange(len(data_dict)):
 drug_names = pd.DataFrame({'Name': all_names, 'Synonyms': all_synonyms, 'International Brands': all_international_brands, 
                             'Indications': all_indications, 'Products': all_products, 'Products NDC ID': all_ndc_id, 
                             'NDC Product Code': all_ndc_product_code})
-drug_names.to_csv('.processed_drug_names_all.csv', index=False)
+drug_names.to_csv('processed_drug_names_all.csv', index=False)
 
 # drug_names = pd.read_csv('drugbank/processed_drug_names.csv')
 # drug_names['NDC Product Code'] = drug_names['NDC Product Code'].apply(lambda x: eval(x))
