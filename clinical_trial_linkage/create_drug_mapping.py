@@ -65,6 +65,6 @@ def main(drug_bank_process_csv_path,save_path):
         
         
 if __name__ == '__main__':
-    drug_bank_process_csv_path = './drugbank/processed_drug_names_all.csv'
+    drug_bank_process_csv_path = 'processed_drug_names_all.csv'
     save_path = './'
     main(drug_bank_process_csv_path,save_path)
