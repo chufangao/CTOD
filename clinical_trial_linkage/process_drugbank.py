@@ -4,14 +4,15 @@ import pandas as pd
 import zipfile
 import json
 
-orange_book = pd.read_csv('./EOBZIP_2024_04/products.txt', sep='~').astype(str)
 
-with zipfile.ZipFile('./openfda/drug-ndc-0001-of-0001.json.zip') as zf:
+orange_book = pd.read_csv('./FDA_approvals/EOBZIP_2024_04/products.txt', sep='~').astype(str)
+
+with zipfile.ZipFile('./drug-ndc-0001-of-0001.json.zip') as zf:
     with zf.open("drug-ndc-0001-of-0001.json") as f:
         data = json.load(f)
 product = pd.DataFrame(data['results'])
 
-with zipfile.ZipFile('./drugbank/drugbank_all_full_database.xml.zip') as zf:
+with zipfile.ZipFile('./drugbank_all_full_database.xml.zip') as zf:
     with zf.open("full database.xml") as f:
         data_dict = xmltodict.parse(f.read())
 data_dict = data_dict['drugbank']['drug']
@@ -72,7 +73,7 @@ for i in trange(len(data_dict)):
 drug_names = pd.DataFrame({'Name': all_names, 'Synonyms': all_synonyms, 'International Brands': all_international_brands, 
                             'Indications': all_indications, 'Products': all_products, 'Products NDC ID': all_ndc_id, 
                             'NDC Product Code': all_ndc_product_code})
-drug_names.to_csv('./drugbank/processed_drug_names_all.csv', index=False)
+drug_names.to_csv('.processed_drug_names_all.csv', index=False)
 
 # drug_names = pd.read_csv('drugbank/processed_drug_names.csv')
 # drug_names['NDC Product Code'] = drug_names['NDC Product Code'].apply(lambda x: eval(x))
@@ -90,7 +91,7 @@ prod_ndc_dict = prod_ndc_dict.set_index('NDC Product Code')['application_number'
 drug_names['Appl_No'] = drug_names['NDC Product Code'].apply(lambda x: [prod_ndc_dict.get(i) for i in x]) 
 # drop rows with no application number
 drug_names = drug_names[drug_names['Appl_No'].apply(lambda x:  any([i is not None for i in x]))]
-drug_names.to_csv('drugbank/processed_drug_names_in_orangebook.csv', index=False)
+drug_names.to_csv('processed_drug_names_in_orangebook.csv', index=False)
 
 # df = pd.read_csv('drugbank/processed_drug_names.csv', converters={'Synonyms': eval, 'International Brands': eval, 'Products': eval})
 # assert 'Vivaglobin' in df['Products'].explode().unique() # True
