@@ -22,6 +22,8 @@ The stock price of pharmaceutical and biotech companies often reflects market ex
 #### [labeling](https://github.com/chufangao/CTOD/tree/main/stock_price)
 For Phases 1, 2, and 3, we determine specific quantile thresholds from a range of values for all tunable labeling functions (LFs), fine-tuning each on the TOP training dataset. Our final labeling process employs both an unsupervised data programming approach and a supervised Random Forest model to estimate labels and align weakly supervised signals with the human-annotated TOP training data. In data programming, we incorporate TOP training labels with other weakly supervised LFs. For the supervised approach, we train a Random Forest model using other weakly supervised LF outputs. 
 
+Additionally,[lfs.py](https://github.com/chufangao/CTOD/blob/main/labeling/lfs.py) contains LFs computed from clinical trial metrics, such as status, number of adverse events, number of admenments, etc.
+
 
 ## Reference
 ```bash
