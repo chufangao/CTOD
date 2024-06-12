@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - Download the [FDA orange book](https://www.fda.gov/media/76860/download?attachment) and save it to ./FDA_approvals/.  Currently, we provide the downloaded version as of 2024-04, which was used to create our dataset. Refer [https://www.fda.gov/drugs/drug-approvals-and-databases/orange-book-data-files](https://www.fda.gov/drugs/drug-approvals-and-databases/orange-book-data-files) for additional details on the FDA orange book.
-- Download the trial dataset from CITI <path>. If it has already been downloaded, provide the path to the data in the scripts.
+- Download the trial dataset from CTTI <path>. If it has already been downloaded, provide the path to the data in the scripts.
 - Download the National Drug Code Directory [/drug/ndc](https://open.fda.gov/data/downloads/)
 - Download the DrugBank full database for researchers: https://go.drugbank.com/releases/latest
 - We have provided the drug mapping dictionary to map the drug names to their generic names at drug_mapping.json. Additionally, to reproduce the mapping dictionary and extract from the updated drug bank database, run the following:
@@ -17,11 +17,11 @@ python create_drug_mapping.py
 
 ## 1. Extract trial info and save trial embeddings
 
-First, we extract trial features from the CITI dataset. Provide the <data_path> for downloaded CITI data in the command below:
+First, we extract trial features from the CTTI dataset. Provide the <data_path> for downloaded CTTI data in the command below:
 
 ```jsx
 cd clinical_trial_linkage
-python extract_trial_info.py --data_path < Path to data files folder from CITI >
+python extract_trial_info.py --data_path < Path to data files folder from CTTI >
 ```
 
 Run the following command to extract and save the embeddings for the trial features using PubMedBERT. Make sure to provide the path to save the embeddings. Feel free to make changes to num_workers and gpu_ids as necessary.
