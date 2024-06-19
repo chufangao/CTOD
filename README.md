@@ -2,7 +2,11 @@
 
 # CTO
 
-Code for CTO: A Large Clinical Trial Outcome [Dataset Link](https://zenodo.org/doi/10.5281/zenodo.11535960).
+Code for CTO: A Large Clinical Trial Outcome 
+
+[Paper Link: Automatically Labeling $200B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark](https://arxiv.org/abs/2406.10292)
+
+[Dataset Link](https://zenodo.org/doi/10.5281/zenodo.11535960)
 
 Please see the following modules for implementations of each of the following sources of weakly supervised labelling functions.
 
@@ -27,19 +31,11 @@ Additionally, [lfs.py](https://github.com/chufangao/CTOD/blob/main/labeling/lfs.
 
 ## Reference
 ```bash
-@dataset{gao_2024_11535961,
-  author       = {Gao, Chufan and
-                  Pradeepkumar, Jathurshan and
-                  Das, Trisha and
-                  Thati, Shivashankar and
-                  Sun, Jimeng},
-  title        = {CTO Dataset: A Clinical Trial Outcome Benchmark},
-  month        = jun,
-  year         = 2024,
-  publisher    = {Zenodo},
-  version      = {0.1},
-  doi          = {10.5281/zenodo.11535961},
-  url          = {https://doi.org/10.5281/zenodo.11535961}
+@@article{gao2024automatically,
+      title={Automatically Labeling $200B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark}, 
+      author={Chufan Gao and Jathurshan Pradeepkumar and Trisha Das and Shivashankar Thati and Jimeng Sun},
+      journal={arXiv preprint arXiv:2406.10292},
+      year={2024},
 }
 ```    
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
