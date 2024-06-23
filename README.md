@@ -31,11 +31,11 @@ Additionally, [lfs.py](https://github.com/chufangao/CTOD/blob/main/labeling/lfs.
 
 ## Reference
 ```bash
-@@article{gao2024automatically,
-      title={Automatically Labeling $200B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark}, 
-      author={Chufan Gao and Jathurshan Pradeepkumar and Trisha Das and Shivashankar Thati and Jimeng Sun},
-      journal={arXiv preprint arXiv:2406.10292},
-      year={2024},
+@article{gao2024automatically,
+  title={Automatically Labeling $200 B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark},
+  author={Gao, Chufan and Pradeepkumar, Jathurshan and Das, Trisha and Thati, Shivashankar and Sun, Jimeng},
+  journal={arXiv preprint arXiv:2406.10292},
+  year={2024}
 }
 ```    
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
