@@ -8,6 +8,8 @@ Code for CTO: A Large Clinical Trial Outcome
 
 [Dataset Link](https://zenodo.org/doi/10.5281/zenodo.11535960)
 
+Please see [Tutorials](https://github.com/chufangao/CTOD/tree/main/tutorials) if you want to simply get started as soon as possible.
+
 Please see the following modules for implementations of each of the following sources of weakly supervised labelling functions.
 
 #### [llm_prediction_on_pubmed](https://github.com/chufangao/CTOD/tree/main/llm_prediction_on_pubmed)
