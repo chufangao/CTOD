@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
         all_company_dfs = []
         for company in sorted(os.listdir(log_dir)):
-            with open(os.path.join(company), 'rb') as f:
+            with open(os.path.join(log_dir, company), 'rb') as f:
                 news = json.load(f)
             # print(company, ticker, news)
 
@@ -210,6 +210,7 @@ if __name__ == '__main__':
         news_df = pd.read_csv('./news.csv')
         news_title_embedding = np.load('./news_title_embeddings.npy')
         top_sponsors = combined
+        
         interventions = pd.read_csv(data_path+'interventions.txt', sep='|')
         conditions = pd.read_csv(data_path+'conditions.txt', sep='|')
 
