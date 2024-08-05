@@ -49,7 +49,7 @@ def get_date_at_month(start_date, month_to_add):
         years -= 1
     return (start_date[0] + years, month, start_date[2])
 
-def get_related_news(keyword, start_date, log_dir, num_months=240):
+def get_related_news(keyword, start_date, log_dir, num_months=240, last_results=None):
     """
     Get news related to a keyword for num_months. Log the news to a json file.
 
@@ -61,7 +61,10 @@ def get_related_news(keyword, start_date, log_dir, num_months=240):
     Returns: dict, news for each month
     """
     google_news = GNews()
-    all_results = {}
+    if last_results is not None:
+        all_results = last_results
+    else:
+        all_results = {}
     for i in range(num_months):
         start_time = get_date_at_month(start_date, i)
         end_time = get_date_at_month(start_date, i+1)
@@ -94,8 +97,8 @@ def get_top_sponsors(sponsors, studies):
 
     Returns: pd.DataFrame, top 1000 most popular phase 3 industry sponsors
     """
-    # sponsors = pd.read_csv(data_path + './CITT/sponsors.txt', sep='|')
-    # studies = pd.read_csv(data_path + './CITT/studies.txt', sep='|', low_memory=False)
+    # sponsors = pd.read_csv(data_path + './CTTI/sponsors.txt', sep='|')
+    # studies = pd.read_csv(data_path + './CTTI/studies.txt', sep='|', low_memory=False)
     studies['study_first_submitted_date'] = pd.to_datetime(studies['study_first_submitted_date'])
     sponsors = pd.merge(sponsors, studies[['nct_id', 'phase', 'study_first_submitted_date']], on='nct_id', how='left')
     sponsors = sponsors[sponsors['agency_class']=='INDUSTRY']
@@ -119,6 +122,7 @@ if __name__ == '__main__':
 
     data_path = './CITT/'
     log_dir = './news_logs/'
+    continue_from_prev_log = True
     sponsors = pd.read_csv(data_path + 'sponsors.txt', sep='|')
     studies = pd.read_csv(data_path + 'studies.txt', sep='|', low_memory=False)
     combined = get_top_sponsors(sponsors, studies)
@@ -130,18 +134,28 @@ if __name__ == '__main__':
 
     if args.mode == 'get_news': # warning: this will take a long time (multiple weeks)
         # get top 1000 most popular phase 3 industry sponsors
-
         global_i = 0
         for name in tqdm(sorted(combined['name'])):
-            if name.lower() in os.listdir(log_dir):
+            # if name.lower() in os.listdir(log_dir):
+            if os.path.exists(os.path.join(log_dir, name.lower()+".json")):
                 print(f'{name} already exists')
-            else:
-                print(f'Getting news for {name}')
-                min_date = combined[combined['name']==name]['study_first_submitted_date'].min()
-                # print(date.year, date.month, date.day)
-                start_date = (int(min_date.year), int(min_date.month), 1)
-                os.makedirs(log_dir+ name.lower(), exist_ok=True)            
-                news = get_related_news(name, start_date, num_months=12*50, log_path=log_dir + name.lower() + '.json')
+                if not continue_from_prev_log:
+                    continue
+                else:
+                    last_results = json.load(open(os.path.join(log_dir, name.lower()+".json")))        
+                    all_dates = [eval(d)[0][0] for d in last_results.keys()]
+                    last_year = sorted(all_dates)[-1]
+                    last_results = {k: v for k, v in last_results.items() if eval(k)[0][0] < last_year}
+
+            print(f'Getting news for {name}')
+            min_date = combined[combined['name']==name]['study_first_submitted_date'].min()
+            # print(date.year, date.month, date.day)
+            start_date = (int(min_date.year), int(min_date.month), 1)
+            os.makedirs(log_dir+name.lower(), exist_ok=True)            
+            
+            
+            news = get_related_news(name, start_date, num_months=12*50, log_path=log_dir + name.lower() + '.json',
+                                    last_results=last_results)
             global_i += 1
             # break
 
@@ -154,7 +168,7 @@ if __name__ == '__main__':
 
         all_company_dfs = []
         for company in sorted(os.listdir(log_dir)):
-            with open(os.path.join(log_dir, company), 'rb') as f:
+            with open(os.path.join(company), 'rb') as f:
                 news = json.load(f)
             # print(company, ticker, news)
 
@@ -210,7 +224,6 @@ if __name__ == '__main__':
         news_df = pd.read_csv('./news.csv')
         news_title_embedding = np.load('./news_title_embeddings.npy')
         top_sponsors = combined
-        
         interventions = pd.read_csv(data_path+'interventions.txt', sep='|')
         conditions = pd.read_csv(data_path+'conditions.txt', sep='|')
 
