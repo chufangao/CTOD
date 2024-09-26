@@ -17,11 +17,16 @@ Psuedo code for the GPT-4 extraction model
 - Number of publications before trial completion
 '''
 
+from hmac import new
 import json
 import glob
+from turtle import update
+from numpy import save
+from torch import ne
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer, util,models
 import os
+import time
 import pandas as pd
 import argparse
 from support_functions import extract_study_basic_info,filter_articles,extract_similar_pubmed_articles
@@ -29,10 +34,15 @@ from support_functions import extract_study_basic_info,filter_articles,extract_s
 
 
 
-def main(data_path,pubmed_path):
+def main(data_path,save_path,dev = False):
     # read extracted pubmed_articles
+    pubmed_path = os.path.join(save_path,'extracted_pubmed')
+    save_path = os.path.join(save_path,'llm_predict')
     
     
+    
+    
+    # read extracted pubmed articles      
     pubmed_files = glob.glob(os.path.join(pubmed_path,'extracted_pubmed','*_pubmed_abs.json'))
     print(f"Total number of pubmed files: {len(pubmed_files)}")
     embeddings = models.Transformer(
@@ -51,13 +61,26 @@ def main(data_path,pubmed_path):
 
     # Extract top 2 similar articles based on trial title and abstract title and create a dataframe
     new_rows = []
+    # read previous top 2 extracted pubmed articles csv in llm_prediction folder
+    top_2_exists = False
+    if os.path.exists(os.path.join(save_path,'top_2_extracted_pubmed_articles.csv')):
+        print('Reading previously extracted top 2 similar articles')
+        top_2_exists = True
+        top_2_prev_df = pd.read_csv(os.path.join(save_path,'top_2_extracted_pubmed_articles.csv'))
+        # convert to list of dictionaries
+        new_rows = top_2_prev_df.to_dict('records') # changed to list of dictionaries
+    
+    updated_nct_id = []
+    new_nct_id =[]
     # # read data frame and append the rows to new_rows
     # pubmed_df = pd.read_csv('./top_2_extracted_pubmed_articles.csv')
     # print(len(pubmed_df))
     # for i in range(len(pubmed_df)):
     #     new_rows.append(pubmed_df.iloc[i].to_dict())
 
-
+    # for development mode 
+    num = 0
+    
     for jsonfile in tqdm(pubmed_files):
         nct_id = jsonfile.split('/')[-1].split('_')[0]
         # if nct_id in pubmed_df['nct_id'].values:
@@ -97,32 +120,98 @@ def main(data_path,pubmed_path):
             for article in pubmed_all_data['References']:
                 if article['Reference type'] == article_type:
                     row[article_type] += 1
-        new_rows.append(row)
+                    
+        # check if the PMID is in the new_rows
+        # check if the ncit_id exists in the new_rows
+        if top_2_exists:
+            nct_id_exists = False
+            for i in range(len(new_rows)):
+                if new_rows[i]['nct_id'] == nct_id:
+                    prev_row = new_rows[i]
+                    nct_id_exists = True
+                    break
+            if nct_id_exists:
+                # check if the PMID exists in the new_rows
+                prev_pmid_list = []
+                for i in range(1,3):
+                    prev_pmid_list.append(prev_row[f'top_{i}_similar_article_PMID'])
+                if row['top_1_similar_article_PMID'] not in prev_pmid_list or row['top_2_similar_article_PMID'] not in prev_pmid_list:
+                    
+                    # delete the previous row from new_rows and append the new row
+                    new_rows.remove(prev_row)
+                    new_rows.append(row)
+                    updated_nct_id.append(nct_id)
+                else:
+                    continue
+            else:
+                new_rows.append(row)
+                new_nct_id.append(nct_id)
+        else:
+            new_rows.append(row)
+            new_nct_id.append(nct_id)
+            
+        num += 1
+        # for development mode
+        if dev and num == 5000:
+            print('Development mode: break')
+            break
         
-        if len(new_rows) % 10000 == 0:
-            pubmed_df = pd.DataFrame(new_rows)  
-            pubmed_df.to_csv('./top_2_extracted_pubmed_articles.csv', index = False)
+        # if len(new_rows) % 10000 == 0:
+        #     pubmed_df = pd.DataFrame(new_rows)  
+        #     pubmed_df.to_csv('./top_2_extracted_pubmed_articles.csv', index = False)
             
     pubmed_df = pd.DataFrame(new_rows)  
     pubmed_df.to_csv('./top_2_extracted_pubmed_articles.csv', index = False)
+    
+    # log all updated nct_id with date to log file
+    if top_2_exists:
+        with open('./logs/pubmed_reference_logs.txt', 'a') as f:
+            f.write('====================\n')
+            f.write(f'Update time: {time.ctime()}\n')
+            f.write('Top 2 similar articles updated for the following nct_ids:\n')
+            f.write(f'Updated {len(updated_nct_id)} nct_id: {updated_nct_id}\n')
+            f.write('Following nct_ids are new:\n')
+            f.write(f'New {len(new_nct_id)} nct_id: {new_nct_id}\n')
+            f.close()
+        print(f'{time.ctime()}: Updated {len(updated_nct_id)} nct_id: {updated_nct_id}')
+        print(f'{time.ctime()}: New {len(new_nct_id)} nct_id: {new_nct_id}')
+        print('Top 2 similar articles updated')
+    else:
+        print('Top 2 similar articles extracted')
+        with open('./logs/pubmed_reference_logs.txt', 'a') as f:
+            f.write('====================\n')
+            f.write(f'Update time: {time.ctime()}\n')
+            f.write('Top 2 similar articles extracted\n')
+            f.write(f'Numeber of nct_ids: {len(new_nct_id)}\n')
+            f.close()
+        print(f'{time.ctime()}: New {len(new_nct_id)} nct_id: {new_nct_id}')
+        print('Top 2 similar articles extracted')
+        
+    # 
 #     # break
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default=None , help='Path to the CITI data folder')
-    parser.add_argument('--pubmed_path', type=str, default=None , help='Path to the extracted pubmed data')
+    # parser.add_argument('--pubmed_path', type=str, default=None , help='Path to the extracted pubmed data')
+    parser.add_argument('--save_path', type=str, default= None, help='Path to save the extracted data')
+    parser.add_argument('--dev', action='store_true', help='Run in development mode')
+    
     args = parser.parse_args()
 
     if args.data_path is None:
         raise ValueError('Please provide the path to the CITI data folder')
-    if args.pubmed_path is None:
-        raise ValueError('Please provide the path to the extracted pubmed data')
+    if args.save_path is None:
+        raise ValueError('Please provide the path to main folder where extracted pubmed data is saved')
     
     data_path = args.data_path
-    pubmed_path = args.pubmed_path
+    # pubmed_path = args.pubmed_path
+    save_path = args.save_path
     
-    os.chdir(args.pubmed_path)
+    # os.chdir(args.pubmed_path)
+    os.chdir(args.save_path)
 
-    main(data_path,pubmed_path)
+    # main(data_path,pubmed_path)
+    main(data_path,save_path,args.dev)
     
