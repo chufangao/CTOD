@@ -141,13 +141,14 @@ def main(data_path,NCBI_api_key, dev = False):
         
         # for development mode
         num += 1
-        if dev and num == 5000:
+        if dev and num == 500:
             print('Development mode: break')
             break
 
     # log all updated nct_id with date to log file
     if not os.path.exists('./logs'):
         os.makedirs('./logs')
+    
     with open('./logs/pubmed_reference_logs.txt', 'a') as f:
         f.write('====================\n')
         f.write(f'Update time: {time.ctime()}\n')
@@ -180,6 +181,8 @@ if __name__ == '__main__':
     # change to path to save_path
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
+        
+    # args.save_path = os.path.join(args.save_path,'llm_predictions_on_pubmed')
     os.chdir(args.save_path)
     
     

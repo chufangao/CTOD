@@ -113,12 +113,12 @@ def filter_articles(nct_id, trial_basic_info, pubmed_files):
             # if completion date is not available, append all references
             if trial_basic_info[nct_id]['completion_date']is None or trial_basic_info[nct_id]['completion_date'] == '':
                 for reference in reference_list:
-                    if reference['Reference type'] in ['derived','result']:
+                    if reference['Reference type'].lower() in ['derived','result']:
                         filtered_articles.append(reference)
                 continue
             
             for reference in reference_list:
-                if reference['Reference type'] in ['derived','result']:
+                if reference['Reference type'].lower() in ['derived','result']:
                     # if reference['Date of Publication'] is not available, append the reference
                     if reference['Date of Publication'] == '':
                         filtered_articles.append(reference)
@@ -135,7 +135,7 @@ def filter_articles(nct_id, trial_basic_info, pubmed_files):
                 # print('No articles found for trial before 5 years after completion:', nct_id)
                 # print('appending all articles')
                 for reference in reference_list:
-                    if reference['Reference type'] in ['derived','result']:
+                    if reference['Reference type'].lower() in ['derived','result']:
                         filtered_articles.append(reference)
                 
     return filtered_articles

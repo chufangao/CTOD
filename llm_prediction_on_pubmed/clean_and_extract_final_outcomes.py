@@ -34,8 +34,12 @@ def main(gpt_decisions_path,top_2_pubmed_path):
             gpt_trial_outcomes = pd.concat([gpt_trial_outcomes, pd.DataFrame({'nct_id': [trial], 'outcome': [trial_outcome]})])
             
 
-
+    # get common nct_ids in top2_pubmed_pd and gpt_trial_outcomes
+    common_nct_ids = list(set(top2_pubmed_pd['nct_id'].values).intersection(set(gpt_trial_outcomes['nct_id'].values)))  
+    print(f'Number of common nct_ids: {common_nct_ids}')
     # merge top2_pubmed_pd with gpt_trial_outcomes on nct_id 
+    top2_pubmed_pd = top2_pubmed_pd[top2_pubmed_pd['nct_id'].isin(common_nct_ids)]
+    print(f'Number of trials with pubmed abstracts: {len(top2_pubmed_pd)}')
     merged_pd = pd.merge(top2_pubmed_pd,gpt_trial_outcomes,  on='nct_id', how='left')
     merged_pd.dropna(subset=['top_1_similar_article_title'], inplace=True)
     # rename background column to num_of_background_pubs, similar for derived and result
@@ -47,21 +51,27 @@ def main(gpt_decisions_path,top_2_pubmed_path):
     merged_pd['outcome'] = merged_pd['outcome'].map({'unsure': 'Not sure', 'Unsure': 'Not sure', 'success': 'Success', 'Success': 'Success', 'partial success': 'Success', 'Fail': 'Failure', 'fail': 'Failure', 'failure': 'Failure'})
     save_path = top_2_pubmed_path.replace('top_2_extracted_pubmed_articles.csv','')
     merged_pd.to_csv(os.path.join(save_path,'pubmed_gpt_outcomes.csv'), index=False)
-        
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gpt_decisions_path', type=str, default= None, help='Path to the folder with gpt decisions')
-    parser.add_argument('--top_2_pubmed_path', type=str, default= None, help='Path to the dataframe with top 2 extracted pubmed articles')
+    # parser.add_argument('--gpt_decisions_path', type=str, default= None, help='Path to the folder with gpt decisions')
+    # parser.add_argument('--top_2_pubmed_path', type=str, default= None, help='Path to the dataframe with top 2 extracted pubmed articles')
+    parser.add_argument('--save_path', type=str, default= None, help='Path to save the LLM decisions')
+    
     args = parser.parse_args()
-    if args.gpt_decisions_path is None:
+    
+    gpt_decisions_path = os.path.join(args.save_path,'llm_predictions_on_pubmed','gpt_responses')
+    top_2_pubmed_path = os.path.join(args.save_path,'llm_predictions_on_pubmed','top_2_extracted_pubmed_articles.csv')
+    
+    if gpt_decisions_path is None:
         raise ValueError('Please provide the path to the folder with gpt decisions')    
-    if args.top_2_pubmed_path is None:
+    if top_2_pubmed_path is None:
         raise ValueError('Please provide the path to the dataframe with top 2 extracted pubmed articles')
     
     
-    main(args.gpt_decisions_path,args.top_2_pubmed_path)
-    print(f'Final outcomes saved in {args.top_2_pubmed_path.replace("top_2_extracted_pubmed_articles.csv","")}pubmed_gpt_outcomes.csv')
+    main(gpt_decisions_path,top_2_pubmed_path)
+    print(f'Final outcomes saved in {top_2_pubmed_path.replace("top_2_extracted_pubmed_articles.csv","")}pubmed_gpt_outcomes.csv')
     print('Done')
     
     

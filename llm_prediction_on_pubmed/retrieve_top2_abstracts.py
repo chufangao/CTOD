@@ -17,6 +17,7 @@ Psuedo code for the GPT-4 extraction model
 - Number of publications before trial completion
 '''
 
+from ast import arg
 from hmac import new
 import json
 import glob
@@ -30,14 +31,14 @@ import time
 import pandas as pd
 import argparse
 from support_functions import extract_study_basic_info,filter_articles,extract_similar_pubmed_articles
-
+import numpy as np
 
 
 
 def main(data_path,save_path,dev = False):
     # read extracted pubmed_articles
-    pubmed_path = os.path.join(save_path,'extracted_pubmed')
-    save_path = os.path.join(save_path,'llm_predict')
+    pubmed_path = '/'.join(save_path.split('/')[0:-1])
+    
     
     
     
@@ -85,7 +86,6 @@ def main(data_path,save_path,dev = False):
         nct_id = jsonfile.split('/')[-1].split('_')[0]
         # if nct_id in pubmed_df['nct_id'].values:
         #     continue
-        
         filtered_articles_list = filter_articles(nct_id, trial_basic_info, pubmed_files)
         top_2_similar_articles = extract_similar_pubmed_articles(nct_id, trial_basic_info, filtered_articles_list, model)
         row = {
@@ -118,7 +118,7 @@ def main(data_path,save_path,dev = False):
         for article_type in ['background','derived','result']:
             row[article_type] = 0
             for article in pubmed_all_data['References']:
-                if article['Reference type'] == article_type:
+                if article['Reference type'].lower() == article_type:
                     row[article_type] += 1
                     
         # check if the PMID is in the new_rows
@@ -152,7 +152,7 @@ def main(data_path,save_path,dev = False):
             
         num += 1
         # for development mode
-        if dev and num == 5000:
+        if dev and num == 500:
             print('Development mode: break')
             break
         
@@ -164,8 +164,9 @@ def main(data_path,save_path,dev = False):
     pubmed_df.to_csv('./top_2_extracted_pubmed_articles.csv', index = False)
     
     # log all updated nct_id with date to log file
+    log_path = '/'.join(save_path.split('/')[0:-1])
     if top_2_exists:
-        with open('./logs/pubmed_reference_logs.txt', 'a') as f:
+        with open(f'{log_path}/logs/pubmed_reference_logs.txt', 'a') as f:
             f.write('====================\n')
             f.write(f'Update time: {time.ctime()}\n')
             f.write('Top 2 similar articles updated for the following nct_ids:\n')
@@ -178,7 +179,9 @@ def main(data_path,save_path,dev = False):
         print('Top 2 similar articles updated')
     else:
         print('Top 2 similar articles extracted')
-        with open('./logs/pubmed_reference_logs.txt', 'a') as f:
+        
+        
+        with open(f'{log_path}/logs/pubmed_reference_logs.txt', 'a') as f:
             f.write('====================\n')
             f.write(f'Update time: {time.ctime()}\n')
             f.write('Top 2 similar articles extracted\n')
@@ -186,7 +189,12 @@ def main(data_path,save_path,dev = False):
             f.close()
         print(f'{time.ctime()}: New {len(new_nct_id)} nct_id: {new_nct_id}')
         print('Top 2 similar articles extracted')
-        
+    
+    # combine new_nct_id and updated_nct_id and save it as a .npy file
+    upd_new_nct_id_list = new_nct_id + updated_nct_id
+    
+    # save the list as a .npy file
+    np.save(f'./updated_new_nct_id.npy', upd_new_nct_id_list)
     # 
 #     # break
 
@@ -207,11 +215,13 @@ if __name__ == '__main__':
     
     data_path = args.data_path
     # pubmed_path = args.pubmed_path
-    save_path = args.save_path
+    args.save_path = os.path.join(args.save_path,'llm_predictions_on_pubmed')
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
     
     # os.chdir(args.pubmed_path)
     os.chdir(args.save_path)
 
     # main(data_path,pubmed_path)
-    main(data_path,save_path,args.dev)
+    main(data_path,args.save_path,args.dev)
     
