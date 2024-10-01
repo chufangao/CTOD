@@ -135,14 +135,20 @@ def main(data_path,save_path,dev = False):
                 prev_pmid_list = []
                 for i in range(1,3):
                     prev_pmid_list.append(prev_row[f'top_{i}_similar_article_PMID'])
-                if row['top_1_similar_article_PMID'] not in prev_pmid_list or row['top_2_similar_article_PMID'] not in prev_pmid_list:
-                    
-                    # delete the previous row from new_rows and append the new row
+                #check if top_1_similar_article_PMID and top_2_similar_article_PMID exists in the  row
+                try:
+                    if row['top_1_similar_article_PMID'] not in prev_pmid_list or row['top_2_similar_article_PMID'] not in prev_pmid_list:
+                        
+                        # delete the previous row from new_rows and append the new row
+                        new_rows.remove(prev_row)
+                        new_rows.append(row)
+                        updated_nct_id.append(nct_id)
+                    else:
+                        continue
+                except:
                     new_rows.remove(prev_row)
                     new_rows.append(row)
                     updated_nct_id.append(nct_id)
-                else:
-                    continue
             else:
                 new_rows.append(row)
                 new_nct_id.append(nct_id)
@@ -152,7 +158,7 @@ def main(data_path,save_path,dev = False):
             
         num += 1
         # for development mode
-        if dev and num == 500:
+        if dev and num == 550:
             print('Development mode: break')
             break
         

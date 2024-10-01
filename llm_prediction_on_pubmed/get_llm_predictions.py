@@ -1,3 +1,4 @@
+from tkinter import N
 from token import OP
 from turtle import up
 from support_functions import init_api
@@ -95,6 +96,8 @@ Begin!
             # check if the nct_id is in the updated nct_ids
             if nct_id not in upd_nct:
                 continue
+            if row['top_1_similar_article_title'] == '' or row['top_2_similar_article_title'] == None:
+                continue 
             
             official_title = row['official_title']
             save_name = f'{nct_id}_gpt_response.json'
@@ -141,7 +144,8 @@ Begin!
                     f.close()
                 # continue
             num += 1
-            if dev and num == 2:
+
+            if dev and (num == 10 or num >=len(upd_nct)):
                 print('Development mode: break')
                 break
     

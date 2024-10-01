@@ -137,11 +137,12 @@ def main(data_path,NCBI_api_key, dev = False):
             missed_nct_id.append(k)
             print(f'Error with {k}')
             time.sleep(5)
+            num += 1
             continue
         
         # for development mode
         num += 1
-        if dev and num == 500:
+        if dev and num == 550:
             print('Development mode: break')
             break
 

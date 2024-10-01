@@ -20,3 +20,6 @@ python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH 
 # echo "Obtaining LLM predictions"
 python get_llm_predictions.py  --save_path $SAVE_PATH --dev
 python clean_and_extract_final_outcomes.py --save_path $SAVE_PATH 
+
+
+# # Getting News Headlines
