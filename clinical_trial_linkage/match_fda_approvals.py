@@ -72,7 +72,7 @@ def match_FDA_approval_to_trials(approval_dict, similar_trials,cross_encoder):
     return matched_trials_applicant
 
 
-def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
+def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder,dev=False):
     print('Reading the FDA approvals')
     # read the FDA approvals
     FDA_path = save_path.replace('clinical_trial_linkage/trial_linkages','FDA/FDA_new/products.txt')
@@ -90,7 +90,6 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     
     #  read trial info 
     trial_info_path = save_path.replace('trial_linkages','trial_info.json')
-    print(trial_info_path)
     with open(trial_info_path, 'r') as f:
         trial_info = json.load(f)
         f.close()
@@ -99,11 +98,11 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     #extract phase 3 and phase 2/ phase 3 trials with drug intervention type
     phase_3_trials = {}
     for study in trial_info:
-        if trial_info[study]['phase'] == 'Phase 3' or trial_info[study]['phase'] == 'Phase 2/Phase 3':
-            if 'Drug' in trial_info[study]['interventions']['intervention_type']:
+        if trial_info[study]['phase'] == 'phase3' or trial_info[study]['phase'] == 'phase2/phase3':
+            if 'DRUG' in trial_info[study]['interventions']['intervention_type']:
                 phase_3_trials[study] = trial_info[study]
     
-    
+    print(len(phase_3_trials))
     # expand the nested dictionary to a flat dictionary
     phase_3_trials_flat = {}    
     for study in phase_3_trials:
@@ -148,7 +147,9 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
             phase_3_fda_matched[matched_trial]['completion_date'] = trial_phase_3_info['completion_date'].values[0]
             phase_3_fda_matched[matched_trial]['condition'] = trial_phase_3_info['conditions'].values[0]
             phase_3_fda_matched[matched_trial]['lead_sponsor'] = trial_phase_3_info['lead_sponsor'].values[0]
-  
+        if dev and i == 20:
+            print('Development break after 20 iterations')
+            break
     print(f'Number of matched trials: {len(phase_3_fda_matched)}')
     
     
@@ -184,6 +185,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_path', type=str, default='', help='path to save the data')
     # parser.add_argument('--trial_linkage_path', type=str, default = None, help='Path to save the matched trials results (provide the path where the trial linkages results are saved)')
+    parser.add_argument('--dev', action='store_true', help='Development mode')
     args = parser.parse_args()
     
     trial_linkage_path = os.path.join(args.save_path, 'clinical_trial_linkage/trial_linkages')
@@ -197,6 +199,6 @@ if __name__ == '__main__':
 
     
     print(f'Matching FDA approvals to trials and updating the merged_all_pd at {merged_all_pd_path}')
-    match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder)
+    match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder,dev=args.dev)
     
 # 4

@@ -9,7 +9,7 @@ python download_ctti.py --save_path $SAVE_PATH
 
 
 
-# Getting LLM predictions on Pubmed data
+# # Getting LLM predictions on Pubmed data
 echo "Getting LLM predictions on Pubmed data"
 cd llm_prediction_on_pubmed 
 
@@ -22,7 +22,7 @@ python get_llm_predictions.py  --save_path $SAVE_PATH --dev
 python clean_and_extract_final_outcomes.py --save_path $SAVE_PATH 
 
 
-# # Getting Clinical Trial Linkage
+# # # Getting Clinical Trial Linkage
 echo "Getting Clinical Trial Linkage"
 cd ..
 cd clinical_trial_linkage
@@ -51,7 +51,7 @@ python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase2' --
 echo 'Extract outcomes from Clinical Trial Linkage'
 python extract_outcome_from_trial_linkage.py --save_path $SAVE_PATH 
 echo 'Matching with FDA orange book'
-python match_fda_approvals.py --save_path $SAVE_PATH
+python match_fda_approvals.py --save_path $SAVE_PATH --dev
 
 
 # News
