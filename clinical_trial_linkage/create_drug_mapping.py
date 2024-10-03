@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import re
 import json
+import argparse
 
 
 def remove_superscripts(text):
@@ -65,6 +66,15 @@ def main(drug_bank_process_csv_path,save_path):
         
         
 if __name__ == '__main__':
-    drug_bank_process_csv_path = 'processed_drug_names_all.csv'
-    save_path = './'
+    parser = argparse.ArgumentParser(description='Create drug mapping')
+    
+    # savepath
+    parser.add_argument('--save_path', type=str, default='', help='path to save the data')
+    
+    args = parser.parse_args()
+    
+    
+    
+    drug_bank_process_csv_path = os.path.join(args.save_path,'drug_bank/processed_drug_names_all.csv')
+    save_path = os.path.join(args.save_path,'drug_bank')
     main(drug_bank_process_csv_path,save_path)

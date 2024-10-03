@@ -1,5 +1,6 @@
 import json
 import glob
+from logging import root
 from tqdm import tqdm
 import os
 import pandas as pd
@@ -10,7 +11,7 @@ import pickle
 import torch
 import argparse
 
-def sample_process(root_folder,gpu_ids):
+def sample_process(root_folder,gpu_ids, dev = False):
 
     process_id = int(get_context().current_process().name.split('-')[-1]) - 1
     device_id = gpu_ids[process_id % len(gpu_ids)]
@@ -25,11 +26,13 @@ def sample_process(root_folder,gpu_ids):
     bi_encoder = SentenceTransformer(modules=[embeddings, pooling], device=device)
     bi_encoder.max_seq_length = 512
 
-    with open('./trial_info.json', 'r') as f: #  read the extracted trial info from CITI data
+    trial_info_path = root_folder.replace('trial_embeddings','trial_info.json')
+    with open(trial_info_path, 'r') as f: #  read the extracted trial info from CITI data
         trial_info = json.load(f)
 
 
-    group_list = ['Early Phase 1', 'Phase 1', 'Phase 1/Phase 2', 'Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
+    # group_list = ['Early Phase 1', 'Phase 1', 'Phase 1/Phase 2', 'Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
+    group_list = ['early_phase1', 'phase1', 'phase1/phase2', 'phase2', 'phase2/phase3', 'phase3', 'phase4']
     print('Dividing into phases ===>')
     phase_trials = {phase: {study: trial_info[study]
                             for study in trial_info if trial_info[study]['phase'] == phase}
@@ -47,8 +50,9 @@ def sample_process(root_folder,gpu_ids):
     
     for target_phase in group_list:
         print(f'Processing {target_phase} ')
+        num = 0
         for study in tqdm(phase_trials[target_phase]):
-            if os.path.exists(os.path.join(root_folder, study + '.pkl')):
+            if os.path.exists(os.path.join(root_folder, study + '.pkl')) and dev:
                 continue
             info_ind = 4   # to separate the short and long info
             study_info = phase_trials[target_phase][study]
@@ -78,20 +82,26 @@ def sample_process(root_folder,gpu_ids):
                 
             #save the embeddings
             pickle.dump(embedding_dict, open(os.path.join(root_folder, study + '.pkl'), 'wb'))
-        
+            num+=1
+            if dev and num >= 100:
+                break
+                #check the number of files in the folder
+                        
 
         
     
         
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--root_folder', type=str, default = None, help='Path to save the embeddings')
+    parser.add_argument('--save_path', type=str, default='', help='path to save the data')
+    parser.add_argument('--dev', action='store_true', help='Run in development mode')
+    # parser.add_argument('--root_folder', type=str, default = None, help='Path to save the embeddings')
     parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
     parser.add_argument('--gpu_ids', type=str, default= '0,1', help='List of gpu ids to use')
     args = parser.parse_args()
     
     set_start_method('spawn')
-    root_folder = args.root_folder  # < Path to save the embeddings >
+    root_folder = os.path.join(args.save_path,'clinical_trial_linkage/trial_embeddings') # < Path to save the embeddings >
     num_workers = args.num_workers # number of workers
     gpu_ids = args.gpu_ids.split(',') # list of gpu ids to use
     
@@ -105,7 +115,7 @@ def main():
 
     processes = []
     for i in range(num_workers):
-        p = Process(target=sample_process, args=(root_folder,gpu_ids))
+        p = Process(target=sample_process, args=(root_folder,gpu_ids,args.dev))
         p.start()
         processes.append(p)
 

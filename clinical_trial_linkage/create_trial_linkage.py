@@ -16,13 +16,17 @@ import argparse
 
 
 
-def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_wei_list,gpu_ids,task_queue,progress_dict):
+def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_wei_list,gpu_ids,task_queue,progress_dict,dev= False):
     set_start_method('spawn', force=True)
     
-    if target_phase == 'Phase 1/Phase 2':
-        save_target_phase = 'Phase 1_Phase 2'
-    elif target_phase == 'Phase 2/Phase 3':
-        save_target_phase = 'Phase 2_Phase 3'
+    # if target_phase == 'Phase 1/Phase 2':
+    #     save_target_phase = 'Phase 1_Phase 2'
+    # elif target_phase == 'Phase 2/Phase 3':
+    #     save_target_phase = 'Phase 2_Phase 3'
+    # else:
+    #     save_target_phase = target_phase
+    if '/' in target_phase:
+        save_target_phase = target_phase.replace('/','_')
     else:
         save_target_phase = target_phase
     
@@ -40,12 +44,14 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
 
     cross_encoder = CrossEncoder(model_name='cross-encoder/ms-marco-MiniLM-L-12-v2', device=device)
 
-    with open('./trial_info.json', 'r') as f:
+    trial_info_path = embedding_path.replace('trial_embeddings','trial_info.json')
+    with open(trial_info_path, 'r') as f:
         trial_info = json.load(f)
 
     # 1) Separate the trials into groups based on phase and map the intervention names to generic names
 
-    group_list = ['Early Phase 1','Phase 1','Phase 1/Phase 2','Phase 2','Phase 2/Phase 3','Phase 3','Phase 4']
+    # group_list = ['Early Phase 1','Phase 1','Phase 1/Phase 2','Phase 2','Phase 2/Phase 3','Phase 3','Phase 4']
+    group_list = ['early_phase1', 'phase1', 'phase1/phase2', 'phase2', 'phase2/phase3', 'phase3', 'phase4']
 
     #separate trials by phase
     phase_trials = {}
@@ -65,11 +71,19 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
     
     
     # Dictionary of connected phases
+    # phase_connect = {
+    #     'Phase 4': ['Phase 3','Phase 2/Phase 3'],
+    #     'Phase 3': ['Phase 2','Phase 1/Phase 2'],
+    #     'Phase 2/Phase 3': ['Phase 1', 'Early Phase 1'],
+    #     'Phase 2': ['Phase 1', 'Early Phase 1'],
+        
+    # }
+    
     phase_connect = {
-        'Phase 4': ['Phase 3','Phase 2/Phase 3'],
-        'Phase 3': ['Phase 2','Phase 1/Phase 2'],
-        'Phase 2/Phase 3': ['Phase 1', 'Early Phase 1'],
-        'Phase 2': ['Phase 1', 'Early Phase 1'],
+        'phase4': ['phase3','phase2/phase3'],
+        'phase3': ['phase2','phase1/phase2'],
+        'phase2/phase3': ['phase1', 'early_phase1'],
+        'phase2': ['phase1', 'early_phase1'],
         
     }
     
@@ -80,6 +94,10 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
     embeddings_dict = {} 
     for sub_study in connected_phase_search_space[target_phase]:
         # for sub_study in connected_phase_search_space[target_phase][ph]:
+            if dev and not os.path.exists(os.path.join(embedding_path,sub_study + '.pkl')):
+                # append empty tensor
+                embeddings_dict[sub_study] = {f'{info}_embedding': torch.zeros(1,768) for info in info_list}
+                continue
             with open(os.path.join(embedding_path,sub_study + '.pkl'), 'rb') as f:
                 embeddings_dict[sub_study] = pickle.load(f)
     
@@ -100,11 +118,12 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
     print(f'Extracting trial linkage for trials in {target_phase}')
     
     
-    
-    while not task_queue.empty():
+    num = 0
+    run_flag = True
+    while not task_queue.empty() and run_flag:
         study = task_queue.get()
     
-        if os.path.exists(os.path.join(root_folder, save_target_phase, f'{study}.json')):
+        if os.path.exists(os.path.join(root_folder, save_target_phase, f'{study}.json')) and dev :
             progress_dict[study] = 'done'
             continue
         
@@ -131,23 +150,32 @@ def get_trial_linkage(root_folder,embedding_path,target_phase,info_list, info_we
         # save the possible ancestors
         with open(os.path.join(root_folder,save_target_phase,study + '.json'), 'w') as f:
             json.dump(possible_ancestors,f)
+        num+=1
         progress_dict[study] = 'done'
+        if dev and num >= 10:
+            run_flag = False
+            break
             
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--root_folder', type=str, default = None, help='Path to save the linkages')
+    # parser.add_argument('--root_folder', type=str, default = None, help='Path to save the linkages')
+    
+    parser.add_argument('--save_path', type=str, default='', help='path to save the data')
     parser.add_argument('--target_phase', type=str, default = 'Phase 2/Phase 3', help='Phase to create linkage with the previous phases. select from ["Phase 2", "Phase 2/Phase 3", "Phase 3", "Phase 4"]')
-    parser.add_argument('--embedding_path', type=str, default = None, help='Path to the embeddings folder')
+    # parser.add_argument('--embedding_path', type=str, default = None, help='Path to the embeddings folder')
     parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
     parser.add_argument('--gpu_ids', type=str, default= '0,1', help='List of gpu ids to use')
+    parser.add_argument('--dev', action='store_true', help='Run in development mode')
     args = parser.parse_args()
     
     set_start_method('spawn', force=True)
-    root_folder = args.root_folder  # < Folder to save the created linkages >
+    # root_folder = args.root_folder  # < Folder to save the created linkages >
+    root_folder = os.path.join(args.save_path,'clinical_trial_linkage/trial_linkages')
     target_phase = args.target_phase # Phase to create linkage with the previous phases. select from ['Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
-    embedding_path = args.embedding_path # < Folder containing the embeddings saved for the trials >
+    # embedding_path = args.embedding_path # < Folder containing the embeddings saved for the trials >
+    embedding_path = os.path.join(args.save_path,'clinical_trial_linkage/trial_embeddings')
     num_workers = args.num_workers # number of workers
     gpu_ids = args.gpu_ids.split(',') # list of gpu ids to use
     
@@ -168,8 +196,8 @@ def main():
         os.makedirs(root_folder)
     if embedding_path is None:
         raise ValueError('Please provide the folder containing the embeddings at embedding_path')
-    
-    with open('./trial_info.json', 'r') as f:
+    trial_info_path = embedding_path.replace('trial_embeddings','trial_info.json')
+    with open(trial_info_path, 'r') as f:
         trial_info = json.load(f)
 
     task_queue = Queue()
@@ -182,7 +210,7 @@ def main():
 
     processes = []
     for _ in range(num_workers):
-        p = Process(target=get_trial_linkage, args=(root_folder, embedding_path, target_phase, info_list, info_wei_list, gpu_ids, task_queue, progress_dict))
+        p = Process(target=get_trial_linkage, args=(root_folder, embedding_path, target_phase, info_list, info_wei_list, gpu_ids, task_queue, progress_dict, args.dev))
         p.start()
         processes.append(p)
 

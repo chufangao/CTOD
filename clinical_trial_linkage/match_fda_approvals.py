@@ -75,7 +75,8 @@ def match_FDA_approval_to_trials(approval_dict, similar_trials,cross_encoder):
 def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     print('Reading the FDA approvals')
     # read the FDA approvals
-    orange_book = pd.read_csv('./FDA_approvals/EOBZIP_2024_04/products.txt', sep='~',parse_dates=['Approval_Date'])
+    FDA_path = save_path.replace('clinical_trial_linkage/trial_linkages','FDA/FDA_new/products.txt')
+    orange_book = pd.read_csv(FDA_path, sep='~',parse_dates=['Approval_Date'])
     # convert 'Approved Prior to Jan 1, 1982' to Jan 1, 1982
     orange_book['Approval_Date'] = orange_book['Approval_Date'].replace('Approved Prior to Jan 1, 1982', '1982-01-01')
     orange_book['Approval_Date'] = pd.to_datetime(orange_book['Approval_Date'])
@@ -88,7 +89,9 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     print(f'Number of unique FDA approvals: {orange_book.shape[0]}')
     
     #  read trial info 
-    with open('./trial_info.json', 'r') as f:
+    trial_info_path = save_path.replace('trial_linkages','trial_info.json')
+    print(trial_info_path)
+    with open(trial_info_path, 'r') as f:
         trial_info = json.load(f)
         f.close()
     trial_info[list(trial_info.keys())[0]]
@@ -118,6 +121,7 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     phase_3_trials_df.reset_index(inplace=True)
     phase_3_trials_df.rename(columns={'index':'nctid'}, inplace=True)
 
+    print(phase_3_trials_df.columns)
     phase_3_trials_df['generic_name'] = phase_3_trials_df['generic_name'].apply(lambda x: list(OrderedDict.fromkeys(x)))
             
              
@@ -178,11 +182,13 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder):
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--trial_linkage_path', type=str, default = None, help='Path to save the matched trials results (provide the path where the trial linkages results are saved)')
+    parser.add_argument('--save_path', type=str, default='', help='path to save the data')
+    # parser.add_argument('--trial_linkage_path', type=str, default = None, help='Path to save the matched trials results (provide the path where the trial linkages results are saved)')
     args = parser.parse_args()
     
+    trial_linkage_path = os.path.join(args.save_path, 'clinical_trial_linkage/trial_linkages')
     
-    save_path = args.trial_linkage_path # Path to save the matched trials results (provide the path where the trial linkages results are saved)
+    save_path = trial_linkage_path # Path to save the matched trials results (provide the path where the trial linkages results are saved)
     if save_path is None:
         raise ValueError('Please provide the path to save the matched trials results (provide the path where the trial linkages results are saved)')
     merged_all_pd_path = os.path.join(save_path, 'outcome_labels','Merged_(ALL)_trial_linkage_outcome_df.csv')
