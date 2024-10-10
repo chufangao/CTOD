@@ -1,21 +1,20 @@
 import os
-# os.environ["HF_HOME"] = "/srv/local/data/chufan2/huggingface/"
 import sys
-import os
 from tqdm.auto import tqdm, trange
 from datetime import datetime, timedelta
 import time
 import pandas as pd
 import numpy as np
 import json
+import torch
 import argparse
-import random
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, CrossEncoder
 
-sys.path.append('./GNews/')
+# append GNews to path, append the path to the GNews folder, in this case, the GNews folder is in the directory of the script
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'GNews/'))
 from gnews import GNews
-
+# quit()
 #convert to datetime
 def convert_to_datetime(date_str):
     """ Convert a date string to a datetime object.
@@ -49,13 +48,13 @@ def get_date_at_month(start_date, month_to_add):
         years -= 1
     return (start_date[0] + years, month, start_date[2])
 
-def get_related_news(keyword, start_date, log_dir, num_months=240, last_results=None):
+def get_related_news(keyword, start_date, SAVE_NEWS_LOG_PATH, num_months=240, last_results=None):
     """
     Get news related to a keyword for num_months. Log the news to a json file.
 
     keyword: str, industry sponsor to search for
     start_date: tuple of (year, month, day)
-    log_dir: str, directory to save the news
+    args.SAVE_NEWS_LOG_PATH: str, directory to save the news
     num_months: int, number of months to get news for from start_date
 
     Returns: dict, news for each month
@@ -78,11 +77,11 @@ def get_related_news(keyword, start_date, log_dir, num_months=240, last_results=
         # Get the news results
         results = google_news.get_news(keyword)
         # random sleep to avoid getting blocked, can be adjusted, but this works for me
-        time.sleep(random.randint(1, 5)) # time.sleep(1)
+        time.sleep(np.random.randint(1, 5)) # time.sleep(1)
         lens = len(results)
         print(f'Got {lens} news for {keyword} in {google_news.start_date} to {google_news.end_date}')
         all_results[str((start_time, end_time))] = results
-        with open(log_dir+'news.json', "w") as f:
+        with open(SAVE_NEWS_LOG_PATH+'news.json', "w") as f:
             json.dump(all_results, f)
         # dump the results
     # sorted_results= sorted(results, key=lambda x: datetime.strptime(x['published date'], "%a, %d %b %Y %H:%M:%S %Z"), reverse=True)
@@ -97,8 +96,8 @@ def get_top_sponsors(sponsors, studies):
 
     Returns: pd.DataFrame, top 1000 most popular phase 3 industry sponsors
     """
-    # sponsors = pd.read_csv(data_path + './CTTI/sponsors.txt', sep='|')
-    # studies = pd.read_csv(data_path + './CTTI/studies.txt', sep='|', low_memory=False)
+    # sponsors = pd.read_csv(args.CTTI_PATH + './CTTI/sponsors.txt', sep='|')
+    # studies = pd.read_csv(args.CTTI_PATH + './CTTI/studies.txt', sep='|', low_memory=False)
     studies['study_first_submitted_date'] = pd.to_datetime(studies['study_first_submitted_date'])
     sponsors = pd.merge(sponsors, studies[['nct_id', 'phase', 'study_first_submitted_date']], on='nct_id', how='left')
     sponsors = sponsors[sponsors['agency_class']=='INDUSTRY']
@@ -115,34 +114,43 @@ def get_top_sponsors(sponsors, studies):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', type=str, default='get_news', help='get_news, process_news, correspond_news_and_studies')
+    parser.add_argument('--continue_from_prev_log', type=bool, default=False)
+    parser.add_argument('--CTTI_PATH', type=str, default='./CITT/')
+    parser.add_argument('--SENTIMENT_MODEL', type=str, default="yiyanghkust/finbert-tone")
+    parser.add_argument('--SENTENCE_ENCODER', type=str, default="microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext")
+    parser.add_argument('--SENTENCE_CROSSENCODER', type=str, default="cross-encoder/ms-marco-MiniLM-L-12-v2")
+    parser.add_argument('--SAVE_NEWS_LOG_PATH', type=str, default='./news_logs/')
+    parser.add_argument('--SAVE_NEWS_EMBEDDING_PATH', type=str, default='./news_title_embeddings.npy')
+    parser.add_argument('--SAVE_STUDY_TITLE_EMBEDDING_PATH', type=str, default='./studies_title2_embeddings.npy')
+    parser.add_argument('--SAVE_NEWS_PATH', type=str, default='./news.csv')
+    parser.add_argument('--SAVE_STUDY_NEWS_PATH', type=str, default='./studies_with_news.csv')
     args = parser.parse_args()
     assert args.mode in ['get_news', 'process_news', 'correspond_news_and_studies']
 
     print(f'args.mode: {args.mode}')
 
-    data_path = './CITT/'
-    log_dir = './news_logs/'
-    continue_from_prev_log = True
-    sponsors = pd.read_csv(data_path + 'sponsors.txt', sep='|')
-    studies = pd.read_csv(data_path + 'studies.txt', sep='|', low_memory=False)
+    continue_from_prev_log = args.continue_from_prev_log
+    sponsors = pd.read_csv(args.CTTI_PATH + 'sponsors.txt', sep='|')
+    studies = pd.read_csv(args.CTTI_PATH + 'studies.txt', sep='|', low_memory=False)
     combined = get_top_sponsors(sponsors, studies)
 
-    cache_folder = '/srv/local/data/chufan2/huggingface/'
-    sentiment_pipe = pipeline("text-classification", model="yiyanghkust/finbert-tone", device='cuda')
-    encoder = SentenceTransformer('microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext', cache_folder=cache_folder)
-    crossencoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-12-v2", max_length=512)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    sentiment_model = pipeline("text-classification", model=args.SENTIMENT_MODEL, device=device)
+    encoder = SentenceTransformer(args.SENTENCE_ENCODER)
+    crossencoder = CrossEncoder(args.SENTENCE_CROSSENCODER, max_length=512)
 
     if args.mode == 'get_news': # warning: this will take a long time (multiple weeks)
         # get top 1000 most popular phase 3 industry sponsors
         global_i = 0
         for name in tqdm(sorted(combined['name'])):
-            # if name.lower() in os.listdir(log_dir):
-            if os.path.exists(os.path.join(log_dir, name.lower()+".json")):
+            # if name.lower() in os.listdir(args.SAVE_NEWS_LOG_PATH):
+            last_results = None
+            if os.path.exists(os.path.join(args.SAVE_NEWS_LOG_PATH, name.lower()+".json")):
                 print(f'{name} already exists')
                 if not continue_from_prev_log:
                     continue
                 else:
-                    last_results = json.load(open(os.path.join(log_dir, name.lower()+".json")))        
+                    last_results = json.load(open(os.path.join(args.SAVE_NEWS_LOG_PATH, name.lower()+".json")))        
                     all_dates = [eval(d)[0][0] for d in last_results.keys()]
                     last_year = sorted(all_dates)[-1]
                     last_results = {k: v for k, v in last_results.items() if eval(k)[0][0] < last_year}
@@ -151,23 +159,18 @@ if __name__ == '__main__':
             min_date = combined[combined['name']==name]['study_first_submitted_date'].min()
             # print(date.year, date.month, date.day)
             start_date = (int(min_date.year), int(min_date.month), 1)
-            os.makedirs(log_dir+name.lower(), exist_ok=True)            
+            os.makedirs(args.SAVE_NEWS_LOG_PATH+name.lower(), exist_ok=True)
             
-            
-            news = get_related_news(name, start_date, num_months=12*50, log_path=log_dir + name.lower() + '.json',
-                                    last_results=last_results)
+            news = get_related_news(name, start_date, num_months=12*50, log_path=args.SAVE_NEWS_LOG_PATH + name.lower() + '.json', last_results=last_results)
             global_i += 1
-            # break
+
 
     # ======================== Process the news data ========================
     elif args.mode == 'process_news':
         print('Processing news data')
-        # studies_df = pd.read_csv('./CITT/studies.txt', sep='|', low_memory=False)        
-        # ticker_dict_df = pd.read_csv('stock_price/ticker_dict_642.csv')
-        # ticker_dict = {row['name'].lower(): row['ticker'] for _, row in ticker_dict_df.iterrows()}
 
         all_company_dfs = []
-        for company in sorted(os.listdir(log_dir)):
+        for company in sorted(os.listdir(args.SAVE_NEWS_LOG_PATH)):
             with open(os.path.join(company), 'rb') as f:
                 news = json.load(f)
             # print(company, ticker, news)
@@ -188,15 +191,9 @@ if __name__ == '__main__':
                         all_publishers.append(news[k][i]['publisher']['title'])
 
             df = pd.DataFrame({'date': all_dates, 'title': all_titles, 'description': all_descriptions, 'publisher': all_publishers})
-            # if company in ticker_dict.keys():
-            #     ticker = ticker_dict[company]
-            # else:
-            #     ticker = pd.NA
-            # df['ticker'] = ticker
             df['company'] = company
             all_company_dfs.append(df)
         all_company_dfs = pd.concat(all_company_dfs)
-        # all_company_dfs.to_csv('./stock_price/news_tmp.csv', index=False); quit() # update old news.csv with company names
 
         print("Processing sentiment")
         batch_size = 512
@@ -204,7 +201,7 @@ if __name__ == '__main__':
         all_label_probs = []
         titles = all_company_dfs['title'].tolist()
         for i in trange(0, len(titles), batch_size):
-            out = sentiment_pipe(titles[i:i+batch_size], batch_size=batch_size)
+            out = sentiment_model(titles[i:i+batch_size], batch_size=batch_size)
             all_label_preds += [o['label'] for o in out]
             all_label_probs += [o['score'] for o in out]
         all_company_dfs['sentiment'] = all_label_preds
@@ -212,20 +209,17 @@ if __name__ == '__main__':
 
         # process title embeddings using pubmedbert
         print("Processing embeddings")
-        encoded_titles = encoder.encode(titles, convert_to_numpy=True, device='cuda', batch_size=batch_size)
-        np.save('./news_title_embeddings.npy', encoded_titles)
+        encoded_titles = encoder.encode(titles, convert_to_numpy=True, device=device, batch_size=batch_size)
+        np.save(args.SAVE_NEWS_EMBEDDING_PATH, encoded_titles)
 
-        # encoded_studies = encoder.encode(studies['brief_title'].tolist(), convert_to_numpy=True, device='cuda', batch_size=batch_size)
-        # np.save('./studies_title_embeddings.npy', encoded_studies)
-
-        all_company_dfs.to_csv('./news.csv', index=False)
+        all_company_dfs.to_csv(args.SAVE_NEWS_PATH, index=False)
 
     elif args.mode == 'correspond_news_and_studies':
-        news_df = pd.read_csv('./news.csv')
-        news_title_embedding = np.load('./news_title_embeddings.npy')
+        news_df = pd.read_csv(args.SAVE_NEWS_PATH)
+        news_title_embedding = np.load(args.SAVE_NEWS_EMBEDDING_PATH)
         top_sponsors = combined
-        interventions = pd.read_csv(data_path+'interventions.txt', sep='|')
-        conditions = pd.read_csv(data_path+'conditions.txt', sep='|')
+        interventions = pd.read_csv(args.CTTI_PATH+'interventions.txt', sep='|')
+        conditions = pd.read_csv(args.CTTI_PATH+'conditions.txt', sep='|')
 
         studies = studies[studies['nct_id'].isin(top_sponsors['nct_id'])]
         studies = studies[studies['nct_id'].isin(interventions['nct_id'])]
@@ -246,7 +240,7 @@ if __name__ == '__main__':
         studies['title2'] = studies['intervention_name'] + ' ' + studies['condition_name']
 
         studies_title2_embedding = encoder.encode(studies['title2'], convert_to_numpy=True, device='cuda', show_progress_bar=True)
-        np.save('./studies_title2_embeddings.npy', studies_title2_embedding)
+        np.save(args.SAVE_STUDY_TITLE_EMBEDDING_PATH, studies_title2_embedding)
 
         # print(news_df.shape, news_title_embedding.shape, studies.shape, studies_title2_embedding.shape)
         # # most relevant news for each study
@@ -279,4 +273,4 @@ if __name__ == '__main__':
             studies.iloc[i, column_ind:column_ind+len(inds)] = news_df_.iloc[inds].index
             studies.iloc[i, column_ind+top_k:column_ind+top_k+len(news_df_)] = sims
 
-        studies.to_csv('./studies_with_news.csv', index=False)
+        studies.to_csv(args.SAVE_STUDY_NEWS_PATH, index=False)
