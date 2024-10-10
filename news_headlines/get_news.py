@@ -81,7 +81,8 @@ def get_related_news(keyword, start_date, SAVE_NEWS_LOG_PATH, num_months=240, la
         lens = len(results)
         print(f'Got {lens} news for {keyword} in {google_news.start_date} to {google_news.end_date}')
         all_results[str((start_time, end_time))] = results
-        with open(SAVE_NEWS_LOG_PATH+'news.json', "w") as f:
+        # print(all_results.keys())
+        with open(SAVE_NEWS_LOG_PATH, "w") as f:
             json.dump(all_results, f)
         # dump the results
     # sorted_results= sorted(results, key=lambda x: datetime.strptime(x['published date'], "%a, %d %b %Y %H:%M:%S %Z"), reverse=True)
@@ -125,6 +126,7 @@ if __name__ == '__main__':
     parser.add_argument('--SAVE_NEWS_PATH', type=str, default='./news.csv')
     parser.add_argument('--SAVE_STUDY_NEWS_PATH', type=str, default='./studies_with_news.csv')
     args = parser.parse_args()
+    print(args)
     assert args.mode in ['get_news', 'process_news', 'correspond_news_and_studies']
 
     print(f'args.mode: {args.mode}')
@@ -148,20 +150,21 @@ if __name__ == '__main__':
             if os.path.exists(os.path.join(args.SAVE_NEWS_LOG_PATH, name.lower()+".json")):
                 print(f'{name} already exists')
                 if not continue_from_prev_log:
+                    print(f'Skipping {name}')
                     continue
                 else:
                     last_results = json.load(open(os.path.join(args.SAVE_NEWS_LOG_PATH, name.lower()+".json")))        
                     all_dates = [eval(d)[0][0] for d in last_results.keys()]
                     last_year = sorted(all_dates)[-1]
+                    start_date = (last_year, 1, 1)
                     last_results = {k: v for k, v in last_results.items() if eval(k)[0][0] < last_year}
-
-            print(f'Getting news for {name}')
-            min_date = combined[combined['name']==name]['study_first_submitted_date'].min()
-            # print(date.year, date.month, date.day)
-            start_date = (int(min_date.year), int(min_date.month), 1)
-            os.makedirs(args.SAVE_NEWS_LOG_PATH+name.lower(), exist_ok=True)
-            
-            news = get_related_news(name, start_date, num_months=12*50, log_path=args.SAVE_NEWS_LOG_PATH + name.lower() + '.json', last_results=last_results)
+                    print(f'Getting news for {name} from {start_date}')
+            else:
+                print(f'Getting news for {name}')
+                min_date = combined[combined['name']==name]['study_first_submitted_date'].min()
+                start_date = (int(min_date.year), int(min_date.month), 1)
+            print('start_date', start_date)
+            news = get_related_news(name, start_date, num_months=12*50, SAVE_NEWS_LOG_PATH=args.SAVE_NEWS_LOG_PATH + name.lower() + '.json', last_results=last_results)
             global_i += 1
 
 
