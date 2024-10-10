@@ -1,4 +1,6 @@
+from tkinter import N
 from token import OP
+from turtle import up
 from support_functions import init_api
 import pandas as pd
 import json
@@ -8,11 +10,13 @@ from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.llms.openai import OpenAI
 from llama_index.core import Settings
 import argparse
+from dotenv import load_dotenv
+import numpy as np
+import time
 
 
 
-
-def main(top_2_pubmed_path,save_path,llm):
+def main(top_2_pubmed_path,save_path,llm, upd_nct = None, dev = False):
 
     Settings.llm = llm
 
@@ -84,13 +88,24 @@ Begin!
     # get gpt decision for each trial in the dataframe
 
 
-
+    num = 0
+    new_nctid_list = []
+    upd_nctid_list = []
     for i, row in tqdm(pubmed_df.iterrows(), total=pubmed_df.shape[0]):
             nct_id = row['nct_id']
+            # check if the nct_id is in the updated nct_ids
+            if nct_id not in upd_nct:
+                continue
+            if row['top_1_similar_article_title'] == '' or row['top_2_similar_article_title'] == None:
+                continue 
+            
             official_title = row['official_title']
             save_name = f'{nct_id}_gpt_response.json'
             if save_name in os.listdir(save_path) or f'{nct_id}_gpt_response.txt' in os.listdir(save_path):
-                continue
+                upd_nctid_list.append(nct_id)
+            else:
+                new_nctid_list.append(nct_id)
+                # continue
             
             abstract_string = ''
             for k in range(1,3):
@@ -127,23 +142,58 @@ Begin!
                 with open(os.path.join(save_path,f'{nct_id}_gpt_response.txt'), 'w') as f:
                     f.write(response.strip())
                     f.close()
-                continue
+                # continue
+            num += 1
+
+            if dev and (num == 10 or num >=len(upd_nct)):
+                print('Development mode: break')
+                break
+    
+    # log all updated and new nct_id with date to log file
+    log_path = '/'.join(save_path.split('/')[0:-2])
+    with open(f'{log_path}/gpt_response_updated_new_nct_id.txt', 'a') as f:
+        f.write('====================\n')
+        f.write(f'Update time: {time.ctime()}\n')
+        f.write('Following nct_ids GPT responses are updated:\n')
+        f.write(f'Updated nct_ids: {upd_nctid_list} \n')
+        f.write('Following nct_ids GPT responses are new:\n')
+        f.write(f'New nct_ids: {new_nctid_list} \n')
+        f.close()
 
 
 
 if __name__ == '__main__':
     OPENAI_API_KEY= None # set your openai api key here
+    load_dotenv()
+    try:
+        OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    except:
+        pass
+    
     temperature=0.2
     if OPENAI_API_KEY is None:
         raise ValueError('Please set the OPENAI_API_KEY')
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--top_2_pubmed_path', type=str, default= None, help='Path to the dataframe with top 2 extracted pubmed articles')
+    # parser.add_argument('--top_2_pubmed_path', type=str, default= None, help='Path to the dataframe with top 2 extracted pubmed articles')
     parser.add_argument('--save_path', type=str, default= None, help='Path to save the LLM decisions')
+    parser.add_argument('--dev', action='store_true', help='Run in development mode')
+    
     args = parser.parse_args()
     
-    top_2_pubmed_path = args.top_2_pubmed_path
-    save_path = args.save_path
+    top_2_pubmed_path = os.path.join(args.save_path,'llm_predictions_on_pubmed','top_2_extracted_pubmed_articles.csv')
+    
+    
+    save_path = os.path.join(args.save_path,'llm_predictions_on_pubmed','gpt_responses')
+    
+    # get updated nct_ids
+    if os.path.exists(f'{args.save_path}/llm_predictions_on_pubmed/updated_new_nct_id.npy'):
+        upd_nct = list(np.load(f'{args.save_path}/llm_predictions_on_pubmed/updated_new_nct_id.npy'))
+    else:
+        upd_nct = None
+    
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     
     if top_2_pubmed_path is None:
         raise ValueError('Please provide the path to the dataframe with top 2 extracted pubmed articles')
@@ -152,10 +202,11 @@ if __name__ == '__main__':
     
     
     print('Initializing LLM')
-    llm = OpenAI(model="gpt-3.5-turbo", temperature = temperature, api_key=OPENAI_API_KEY)
+    llm = OpenAI(model="gpt-3.5-turbo", temperature = temperature, api_key=OPENAI_API_KEY,
+                 response_format = "json_object")
 
     
     
-    main(top_2_pubmed_path,save_path,llm)
+    main(top_2_pubmed_path,save_path,llm,upd_nct,args.dev)
     
     

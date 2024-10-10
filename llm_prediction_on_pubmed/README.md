@@ -21,7 +21,7 @@ python extract_pubmed_abstracts.py --data_path <Path to CITI data> --NCBI_api_ke
 - To make the process efficient, we initially retrieve the top 2 most relevant abstracts (as shown in the figure above) and save them in a data frame.
 
 ```jsx
-python retrieve_top2_abstracts.py --data_path <Path to CITI data> --pubmed_path <Path to the extracted pubmed data>
+python retrieve_top2_abstracts.py --data_path <Path to CITI data> --save_path <Path to save data>
 ```
 
 The resultant data frame will be saved at /<pubmed_path>/top_2_extracted_pubmed_articles.csv

@@ -1,9 +1,9 @@
+from ast import parse
 import json
 import glob
 from tqdm import tqdm
 import os
 import pandas as pd
-from PyHealth.pyhealth import data
 from trial_linkage_utils import map_drug_names
 from multiprocessing import Pool, cpu_count
 import argparse
@@ -14,7 +14,7 @@ def map_drug_names_wrapper(args):
     return nct_id, map_drug_names(study_data, drug_mapping)
 
 
-def extract_features_trial_info(data_path,save_path):
+def extract_features_trial_info(data_path,save_path, dev = False):
 
     # Read the studies.txt file --> Basic info about the trials (nct_id, official_title, phase, start_date, completion_date)
     print('Extracting basic trial info')
@@ -32,8 +32,12 @@ def extract_features_trial_info(data_path,save_path):
     print('after removing trials with no start_date or completion_date:',file_data.shape)
 
 
-    group_list = ['Early Phase 1', 'Phase 1', 'Phase 1/Phase 2', 'Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
+    # group_list = ['Early Phase 1', 'Phase 1', 'Phase 1/Phase 2', 'Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4']
+    group_list = ['early_phase1', 'phase1', 'phase1/phase2', 'phase2', 'phase2/phase3', 'phase3', 'phase4']
     # remove rows with phase not in group_list
+    # print(file_data['phase'].value_counts())
+    # convert phase to lower case
+    file_data['phase'] = file_data['phase'].str.lower()
     file_data = file_data[file_data['phase'].isin(group_list)]
     print('after removing trials with phase not in group_list:',file_data.shape)
 
@@ -99,17 +103,26 @@ def extract_features_trial_info(data_path,save_path):
             continue
 
         if 'interventions' not in trial_info[nct_id]:
-            trial_info[nct_id]['interventions'] = {'intervention_type':[], 'intervention_name':[],'intervention_description':[]}
+            if dev:
+                trial_info[nct_id]['interventions'] = {'intervention_type':[], 'intervention_name':[],'intervention_description':[],'generic_name':[]}
+            else:
+                trial_info[nct_id]['interventions'] = {'intervention_type':[], 'intervention_name':[],'intervention_description':[]}
             
         trial_info[nct_id]['interventions']['intervention_type'].append(study[columns.index('intervention_type')])
         trial_info[nct_id]['interventions']['intervention_name'].append(study[columns.index('name')])
         trial_info[nct_id]['interventions']['intervention_description'].append(study[columns.index('description')])
         
+        if dev:
+            trial_info[nct_id]['interventions']['generic_name'].append(study[columns.index('name')])
+        
     # if there are no interventions for a study, add None
     for study in trial_info:
         if 'interventions' not in trial_info[study]:
             if 'interventions' not in trial_info[study]:
-                trial_info[study]['interventions'] = {'intervention_type':'', 'intervention_name':'','intervention_description':''}
+                if dev:
+                    trial_info[study]['interventions'] = {'intervention_type':'', 'intervention_name':'','intervention_description':'','generic_name':''}
+                else:
+                    trial_info[study]['interventions'] = {'intervention_type':'', 'intervention_name':'','intervention_description':''}
             
     # Extract conditions
     print('Extracting conditions')
@@ -179,11 +192,12 @@ def extract_features_trial_info(data_path,save_path):
         if 'brief_summary' not in trial_info[study]:
             trial_info[study]['brief_summary'] = ''
             
-            
+    print('len(trial_info):',len(trial_info))        
             
     # mapping drug names
     print('mapping drug names ===>')
-    with open(os.path.join("./drug_mapping.json"), 'r') as f:
+    drug_mapping_path = save_path.replace('clinical_trial_linkage','drug_bank')
+    with open(os.path.join(drug_mapping_path,"drug_mapping.json"), 'r') as f:
         drug_mapping = json.load(f)
     
     
@@ -193,12 +207,19 @@ def extract_features_trial_info(data_path,save_path):
             
             trial_info[study] = result
             
+            if dev:
+                break
+            
     print('mapping drug names done ===>')
     print('len(trial_info):',len(trial_info))
     # save trial info to json
     with open(os.path.join(save_path, 'trial_info.json'), 'w') as f:
         json.dump(trial_info, f, indent=4)
-        
+    
+    
+    if len(trial_info) == 0:
+        raise ValueError('Size of extracted trial_info is 0. No trial info extracted from the data files. Please check the data files and try again.')    
+    
     print('trial_info saved ===>',os.path.join(save_path, 'trial_info.json'))
 
 
@@ -207,16 +228,22 @@ def extract_features_trial_info(data_path,save_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default=None, help='Path to data files folder from CITI')
+    parser.add_argument('--save_path', type=str, default='./', help='Path to save the extracted features')
+    parser.add_argument('--dev', action='store_true', help='Run in dev mode')
     args = parser.parse_args()
     
     
     
     
     data_path = args.data_path # < Path to data files folder from CITI >
-    save_path = './'
+    save_path = os.path.join(args.save_path, 'clinical_trial_linkage')
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    
+    
     if data_path is None:
         raise ValueError('Please provide the path to the data files from CITI at data_path')
-    extract_features_trial_info(data_path,save_path)
+    extract_features_trial_info(data_path,save_path, args.dev)
     
 # 0
         

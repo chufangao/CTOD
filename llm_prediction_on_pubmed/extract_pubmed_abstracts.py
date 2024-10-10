@@ -48,7 +48,7 @@ def get_all_data(article):
     return article_data
 
 
-def main(data_path,NCBI_api_key):
+def main(data_path,NCBI_api_key, dev = False):
     study_ref_path = os.path.join(data_path,'study_references.txt')
     
     study_ref_file = open(study_ref_path, "r").read().split('\n')
@@ -56,8 +56,9 @@ def main(data_path,NCBI_api_key):
 
 
     # extract id nct_id, pmid, reference_type and citation and store in a dictionary
+    print('Extracting data from study_references.txt')
     study_ref_dict = {'id':{},'nct_id':{},'pmid':{},'reference_type':{},'citation':{}} # create a dictionary with empty lists as values
-    for i in range(1,len(study_ref_file)-1):
+    for i in tqdm(range(1,len(study_ref_file)-1)):
         study_ref_dict['id'][i-1] = study_ref_file[i].split('|')[0]
         study_ref_dict['nct_id'][i-1] = study_ref_file[i].split('|')[1]
         study_ref_dict['pmid'][i-1] = study_ref_file[i].split('|')[2]
@@ -88,6 +89,7 @@ def main(data_path,NCBI_api_key):
     num = 0
     total = len(nct_id_dict)
     missed_nct_id = []
+    updated_nct_id = []
     for k,v in tqdm(nct_id_dict.items()):
         
         try:
@@ -98,11 +100,22 @@ def main(data_path,NCBI_api_key):
             
             reference_list = []
             #check whether the file exists
-            if os.path.exists(os.path.join('./extracted_pubmed',f'{nct_id}_pubmed_abs.json')):
-                continue
+            trial_ref_exists_in_data = False
+            if os.path.exists(os.path.join('./extracted_pubmed',f'{nct_id}_pubmed_abs.json')): # checking if the trial references scraped previously
+                existing_reference_dict = json.load(open(os.path.join('./extracted_pubmed',f'{nct_id}_pubmed_abs.json')))
+                reference_list = existing_reference_dict['References']
+                #get PMID from existing references
+                existing_pmids = [reference_list[i]['PMID'] for i in range(len(reference_list))]
+                trial_ref_exists_in_data = True
+                # continue
             
+            is_file_updated = False
             for i in range(len(v)):
                 pmid= v[i][0]
+                if trial_ref_exists_in_data: # if the trial reference exists in the data, skip the reference
+                    if pmid in existing_pmids:
+                        continue
+                is_file_updated = True  
                 ref_type = v[i][1]  
                 # print(nct_id, pmid, ref_type)
                 text_path = './pubmed_data.txt'
@@ -118,11 +131,33 @@ def main(data_path,NCBI_api_key):
             reference_data['References'] = reference_list
             with open(os.path.join('./extracted_pubmed',f'{nct_id}_pubmed_abs.json'), 'w') as f:
                 json.dump(reference_data, f)
+            if is_file_updated:
+                updated_nct_id.append(k)
         except:
             missed_nct_id.append(k)
             print(f'Error with {k}')
             time.sleep(5)
+            num += 1
             continue
+        
+        # for development mode
+        num += 1
+        if dev and num == 550:
+            print('Development mode: break')
+            break
+
+    # log all updated nct_id with date to log file
+    if not os.path.exists('./logs'):
+        os.makedirs('./logs')
+    
+    with open('./logs/pubmed_reference_logs.txt', 'a') as f:
+        f.write('====================\n')
+        f.write(f'Update time: {time.ctime()}\n')
+        f.write('Extracting pubmed abstracts\n')
+        f.write(f'Updated {len(updated_nct_id)} nct_id: {updated_nct_id}\n')
+        f.close()
+    print(f'{time.ctime()} - Updated {len(updated_nct_id)} nct_id: {updated_nct_id}')
+    print('Pubmed abstracts extraction completed')
         
     
 
@@ -131,6 +166,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_path', type=str, default= None, help='Path to the CITI data folder')
     parser.add_argument('--NCBI_api_key', type=str, default= None, help='NCBI API key')
     parser.add_argument('--save_path', type=str, default= None, help='Path to save the extracted data')
+    parser.add_argument('--dev', action='store_true', help='Run in development mode')
     args = parser.parse_args()
     
     data_path = args.data_path
@@ -146,11 +182,13 @@ if __name__ == '__main__':
     # change to path to save_path
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
+        
+    # args.save_path = os.path.join(args.save_path,'llm_predictions_on_pubmed')
     os.chdir(args.save_path)
     
     
     print('Extracting PubMed abstracts')
-    main(data_path,NCBI_api_key)
+    main(data_path,NCBI_api_key, args.dev)
     print('Done')
     
 

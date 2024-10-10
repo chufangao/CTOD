@@ -15,22 +15,33 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     
+    # phase_connect = {
+    # 'Phase 4': ['Phase 3','Phase 2/Phase 3'],
+    # 'Phase 3': ['Phase 2','Phase 1/Phase 2'],
+    # 'Phase 2/Phase 3': ['Early Phase 1','Phase 1', ],
+    # 'Phase 2': ['Phase 1', 'Early Phase 1'],
+    # }
+    
     phase_connect = {
-    'Phase 4': ['Phase 3','Phase 2/Phase 3'],
-    'Phase 3': ['Phase 2','Phase 1/Phase 2'],
-    'Phase 2/Phase 3': ['Early Phase 1','Phase 1', ],
-    'Phase 2': ['Phase 1', 'Early Phase 1'],
+        'phase4': ['phase3','phase2/phase3'],
+        'phase3': ['phase2','phase1/phase2'],
+        'phase2/phase3': ['phase1', 'early_phase1'],
+        'phase2': ['early_phase1','phase1'],
+        
     }
+    
 
     # read trial info from json
-    with open('./trial_info.json', 'r') as f:
+    trial_info_path = trial_linkage_path.replace('trial_linkages','trial_info.json')
+    with open(trial_info_path, 'r') as f:
         trial_info = json.load(f)
         f.close()
     
 
 
     # Separate the trials into groups based on phase and map the intervention names to generic names
-    group_list = ['Early Phase 1','Phase 1','Phase 1/Phase 2','Phase 2','Phase 2/Phase 3','Phase 3','Phase 4']
+    # group_list = ['Early Phase 1','Phase 1','Phase 1/Phase 2','Phase 2','Phase 2/Phase 3','Phase 3','Phase 4']
+    group_list = ['early_phase1', 'phase1', 'phase1/phase2', 'phase2', 'phase2/phase3', 'phase3', 'phase4']
 
     #separate trials by phase
     phase_trials = {}
@@ -178,8 +189,12 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
     
     #combine phase 1 and early phase 1 labels
     print('Combining Phase 1 and Early Phase 1 labels')
-    phase1_df1 = pd.read_csv(os.path.join(save_path,'(Phase 1 Early Phase 1)_trial_linkage_outcome_df.csv'))
-    phase1_df2 = pd.read_csv(os.path.join(save_path,'(Early Phase 1 Phase 1)_trial_linkage_outcome_df.csv'))
+    # phase1_df1 = pd.read_csv(os.path.join(save_path,'(Phase 1 Early Phase 1)_trial_linkage_outcome_df.csv'))
+    # phase1_df2 = pd.read_csv(os.path.join(save_path,'(Early Phase 1 Phase 1)_trial_linkage_outcome_df.csv'))
+    
+    phase1_df1 = pd.read_csv(os.path.join(save_path,'(phase1 early_phase1)_trial_linkage_outcome_df.csv'))
+    phase1_df2 = pd.read_csv(os.path.join(save_path,'(early_phase1 phase1)_trial_linkage_outcome_df.csv'))
+    
     
     merge_dict = {}
     nct_id_list = set(list(phase1_df1['nctid'].values) + list(phase1_df2['nctid'].values))
@@ -223,8 +238,11 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
     merge_df.to_csv(os.path.join(save_path,'Merged_(Early Phase 1 Phase 1)_trial_linkage_outcome_df.csv'),index=False)
     
     # delete the individual phase 1 and early phase 1 files
-    os.remove(os.path.join(save_path,'(Phase 1 Early Phase 1)_trial_linkage_outcome_df.csv'))
-    os.remove(os.path.join(save_path,'(Early Phase 1 Phase 1)_trial_linkage_outcome_df.csv'))
+    # os.remove(os.path.join(save_path,'(Phase 1 Early Phase 1)_trial_linkage_outcome_df.csv'))
+    # os.remove(os.path.join(save_path,'(Early Phase 1 Phase 1)_trial_linkage_outcome_df.csv'))
+    
+    os.remove(os.path.join(save_path,'(phase1 early_phase1)_trial_linkage_outcome_df.csv'))
+    os.remove(os.path.join(save_path,'(early_phase1 phase1)_trial_linkage_outcome_df.csv'))
     print('Done combining Phase 1 and Early Phase 1 labels')
     
     # combine all the phase labels
@@ -247,11 +265,13 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--trial_linkage_path', type=str, default=None, help='Path to the trial linkage folder containing the json files of the trial linkage')
+    parser.add_argument('--save_path', type=str, default='', help='path to save the data')
+    # parser.add_argument('--trial_linkage_path', type=str, default=None, help='Path to the trial linkage folder containing the json files of the trial linkage')
     args = parser.parse_args()
     
     ### Parameters
-    trial_linkage_path = args.trial_linkage_path # Path to the trial linkage folder containing the json files of the trial linkage
+    trial_linkage_path = os.path.join(args.save_path, 'clinical_trial_linkage/trial_linkages')
+    # args.trial_linkage_path # Path to the trial linkage folder containing the json files of the trial linkage
     if trial_linkage_path is None:
         raise ValueError('Please provide the path to the trial linkage folder at trial_linkage_path')
     save_path = os.path.join(trial_linkage_path,'outcome_labels') # Path to save the extracted outcome labels, a outcome_labels path in the trial linkage folder
