@@ -1,15 +1,12 @@
 import os
 import sys
-from tqdm.auto import tqdm, trange
+from tqdm import tqdm, trange
 from datetime import datetime, timedelta
 import time
 import pandas as pd
-import numpy as np
+import random
 import json
-import torch
 import argparse
-from transformers import pipeline
-from sentence_transformers import SentenceTransformer, CrossEncoder
 from gnews import GNews
 # # append GNews to path, append the path to the GNews folder, in this case, the GNews folder is in the directory of the script
 # sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'GNews/'))
@@ -29,6 +26,7 @@ USERAGENT_LIST = [
 ]
 
 def getNewsData(query):
+# getNewsData('NCT04994509 clinical trial')
     headers = {
         'User-Agent': random.choice(USERAGENT_LIST)
     }
@@ -51,32 +49,30 @@ def getNewsData(query):
     # print(json.dumps(news_results, indent=2))
     return news_results
 
-# getNewsData('NCT04994509 clinical trial')
 
-
-def get_top_sponsors(sponsors, studies):
-    """
-    Get the top 1000 most popular phase 3 industry sponsors
+# def get_top_sponsors(sponsors, studies):
+#     """
+#     Get the top 1000 most popular phase 3 industry sponsors
     
-    sponsors: pd.DataFrame, sponsors.txt
-    studies: pd.DataFrame, studies.txt
+#     sponsors: pd.DataFrame, sponsors.txt.zip
+#     studies: pd.DataFrame, studies.txt.zip
 
-    Returns: pd.DataFrame, top 1000 most popular phase 3 industry sponsors
-    """
-    # sponsors = pd.read_csv(args.CTTI_PATH + './CTTI/sponsors.txt', sep='|')
-    # studies = pd.read_csv(args.CTTI_PATH + './CTTI/studies.txt', sep='|', low_memory=False)
-    studies['study_first_submitted_date'] = pd.to_datetime(studies['study_first_submitted_date'])
-    sponsors = pd.merge(sponsors, studies[['nct_id', 'phase', 'study_first_submitted_date']], on='nct_id', how='left')
-    sponsors = sponsors[sponsors['agency_class']=='INDUSTRY']
-    sponsors.dropna(inplace=True)
-    sponsors = sponsors[sponsors['phase'].str.contains('Phase 3')]
-    top_sponsors = sponsors['name'].value_counts().head(1000)
-    # coverage_ = top_sponsors.sum() / sponsors['name'].value_counts().sum()
-    # print(coverage_) # 0.8548555767913166
-    combined = pd.merge(top_sponsors.reset_index(),
-                        sponsors.groupby('name')['study_first_submitted_date'].min().reset_index(),
-                        on='name', how='left')
-    return combined
+#     Returns: pd.DataFrame, top 1000 most popular phase 3 industry sponsors
+#     """
+#     # sponsors = pd.read_csv(args.CTTI_PATH + './CTTI/sponsors.txt.zip', sep='|')
+#     # studies = pd.read_csv(args.CTTI_PATH + './CTTI/studies.txt.zip', sep='|', low_memory=False)
+#     studies['study_first_submitted_date'] = pd.to_datetime(studies['study_first_submitted_date'])
+#     sponsors = pd.merge(sponsors, studies[['nct_id', 'phase', 'study_first_submitted_date']], on='nct_id', how='left')
+#     sponsors = sponsors[sponsors['agency_class']=='INDUSTRY']
+#     sponsors.dropna(inplace=True)
+#     sponsors = sponsors[sponsors['phase'].str.contains('Phase 3')]
+#     top_sponsors = sponsors['name'].value_counts().head(1000)
+#     # coverage_ = top_sponsors.sum() / sponsors['name'].value_counts().sum()
+#     # print(coverage_) # 0.8548555767913166
+#     combined = pd.merge(top_sponsors.reset_index(),
+#                         sponsors.groupby('name')['study_first_submitted_date'].min().reset_index(),
+#                         on='name', how='left')
+#     # return combined
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -91,40 +87,48 @@ if __name__ == '__main__':
     parser.add_argument('--SAVE_STUDY_TITLE_EMBEDDING_PATH', type=str, default='./studies_title2_embeddings.npy')
     parser.add_argument('--SAVE_NEWS_PATH', type=str, default='./news.csv')
     parser.add_argument('--SAVE_STUDY_NEWS_PATH', type=str, default='./studies_with_news.csv')
+    parser.add_argument('--NCT_IDS_TO_PROCESS', type=str, default=None)
     args = parser.parse_args()
     print(args)
     assert args.mode in ['get_news', 'process_news', 'correspond_news_and_studies']
 
     print(f'args.mode: {args.mode}')
-
-    continue_from_prev_log = args.continue_from_prev_log
-    studies = pd.read_csv(args.CTTI_PATH + 'studies.txt', sep='|', low_memory=False)
-    interventions = pd.read_csv(args.CTTI_PATH + 'interventions.txt', sep='|', low_memory=False)
+    print('Loading CTTI data')
+    studies = pd.read_csv(args.CTTI_PATH + 'studies.txt.zip', sep='|', low_memory=False)
+    interventions = pd.read_csv(args.CTTI_PATH + 'interventions.txt.zip', sep='|', low_memory=False)
+    print('Loaded CTTI data')
+    
     interventions = interventions[interventions['intervention_type'].isin(['DRUG', 'BIOLOGICAL'])]
     studies = studies[studies['nct_id'].isin(interventions['nct_id'])]
+    studies = studies[studies['overall_status']=='COMPLETED']
     studies.dropna(subset=['phase'], inplace=True)
     studies = studies[studies['phase'].str.contains('1') | studies['phase'].str.contains('2') | studies['phase'].str.contains('3')]
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    sentiment_model = pipeline("text-classification", model=args.SENTIMENT_MODEL, device=device)
-    encoder = SentenceTransformer(args.SENTENCE_ENCODER)
-    crossencoder = CrossEncoder(args.SENTENCE_CROSSENCODER, max_length=512)
-    
+    if args.NCT_IDS_TO_PROCESS is not None:
+        nct_ids_to_process = pd.read_csv(args.NCT_IDS_TO_PROCESS)
+        studies = studies[studies['nct_id'].isin(nct_ids_to_process['nct_id'])]
+    print(f'Processing {studies.shape[0]} studies')
+    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # sentiment_model = pipeline("text-classification", model=args.SENTIMENT_MODEL, device=device)
+    # encoder = SentenceTransformer(args.SENTENCE_ENCODER)
+    # crossencoder = CrossEncoder(args.SENTENCE_CROSSENCODER, max_length=512)
+    print('Loading GNews')
     google_news = GNews()
-
+    print('Loaded GNews, ready to get news')
     if args.mode == 'get_news': # warning: this will take a long time (multiple weeks)
         for nct_id in tqdm(studies['nct_id']):
-            time.sleep(np.random.uniform(1, 5))
+            # print(f'Getting news for {nct_id}')
+            time.sleep(random.random()*5+4)
             if os.path.exists(os.path.join(args.SAVE_NEWS_LOG_PATH, nct_id+".json")):
-                print(f'{nct_id} already exists')
+                # print(f'{nct_id} already exists')
                 with open(os.path.join(args.SAVE_NEWS_LOG_PATH, nct_id+".json"), 'rb') as f:
                     news = json.load(f)
                 if len(news) > 0:
                     print(f'Loaded {len(news)} news for {nct_id}')
                     continue
 
-            # news = google_news.get_news(f"{nct_id} clinical trial")
-            news = getNewsData(f"{nct_id} clinical trial")
+            news = google_news.get_news(f"{nct_id} clinical trial")
+            # news = getNewsData(f"{nct_id} clinical trial")
             if news is None:
                 news = []
             if len(news) > 0:
@@ -136,6 +140,8 @@ if __name__ == '__main__':
     # # ======================== Process the news data ========================
     # elif args.mode == 'process_news':
     #     print('Processing news data')
+    # from transformers import pipeline
+    # from sentence_transformers import SentenceTransformer, CrossEncoder
 
     #     all_company_dfs = []
     #     for company in sorted(os.listdir(args.SAVE_NEWS_LOG_PATH)):
@@ -183,11 +189,13 @@ if __name__ == '__main__':
     #     all_company_dfs.to_csv(args.SAVE_NEWS_PATH, index=False)
 
     # elif args.mode == 'correspond_news_and_studies':
+        # from transformers import pipeline
+        # from sentence_transformers import SentenceTransformer, CrossEncoder                
     #     news_df = pd.read_csv(args.SAVE_NEWS_PATH)
     #     news_title_embedding = np.load(args.SAVE_NEWS_EMBEDDING_PATH)
     #     top_sponsors = combined
-    #     interventions = pd.read_csv(args.CTTI_PATH+'interventions.txt', sep='|')
-    #     conditions = pd.read_csv(args.CTTI_PATH+'conditions.txt', sep='|')
+    #     interventions = pd.read_csv(args.CTTI_PATH+'interventions.txt.zip', sep='|')
+    #     conditions = pd.read_csv(args.CTTI_PATH+'conditions.txt.zip', sep='|')
 
     #     studies = studies[studies['nct_id'].isin(top_sponsors['nct_id'])]
     #     studies = studies[studies['nct_id'].isin(interventions['nct_id'])]

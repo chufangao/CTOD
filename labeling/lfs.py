@@ -21,14 +21,14 @@ def reorder_columns(df, cols_in_front):
     return df[columns]
 
 def lf_results_reported(path):
-    df = pd.read_csv(path + 'calculated_values.txt', sep='|', low_memory=False)
+    df = pd.read_csv(path + 'calculated_values.txt.zip', sep='|', low_memory=False)
     df['lf'] = df['were_results_reported'] == 't'
     df['lf'] = df['lf'].astype('int')
     df = reorder_columns(df, ['nct_id', 'lf'])
     return df
 
 def lf_num_sponsors(path, quantile=.5):
-    df = pd.read_csv(path + 'sponsors.txt', sep='|',low_memory=False)
+    df = pd.read_csv(path + 'sponsors.txt.zip', sep='|',low_memory=False)
     df = df.groupby('nct_id')['name'].count().reset_index()
     df['lf'] = df['name'] > df['name'].quantile(quantile)
     df['lf'] = df['lf'].fillna(-1).astype('int')
@@ -36,7 +36,7 @@ def lf_num_sponsors(path, quantile=.5):
     return df
 
 def lf_num_patients(path, quantile=.5):
-    df = pd.read_csv(path + 'outcome_counts.txt', sep='|', low_memory=False)    
+    df = pd.read_csv(path + 'outcome_counts.txt.zip', sep='|', low_memory=False)    
     df = df.groupby('nct_id').sum().reset_index() # pd df (NCTID, values, num_patients)
     df['lf'] = df['count'] > df['count'].quantile(quantile)
     df['lf'] = df['lf'].fillna(-1).astype('int')
@@ -45,7 +45,7 @@ def lf_num_patients(path, quantile=.5):
 
 def lf_patient_drop(path, quantile=.5):
     # patient dropout
-    df = pd.read_csv(os.path.join(path, 'drop_withdrawals.txt'), sep='|',low_memory=False)
+    df = pd.read_csv(os.path.join(path, 'drop_withdrawals.txt.zip'), sep='|',low_memory=False)
     df = df.groupby('nct_id').sum().reset_index() # pd df (NCTID, values, patient_drop)
     df['lf'] = df['count'] < df['count'].quantile(quantile)
     df['lf'] = df['lf'].fillna(-1).astype('int')
@@ -54,7 +54,7 @@ def lf_patient_drop(path, quantile=.5):
 
 def lf_sites(path, quantile=.5):
     # sites
-    df = pd.read_csv(os.path.join(path, 'facilities.txt'), sep='|',low_memory=False)
+    df = pd.read_csv(os.path.join(path, 'facilities.txt.zip'), sep='|',low_memory=False)
     df = df.groupby('nct_id')['name'].count().sort_values(ascending=False).reset_index()
     df = df.groupby('nct_id').mean().reset_index() # pd df (NCTID, values, sites)
     df['lf'] = df['name'] > df['name'].quantile(quantile)
@@ -64,8 +64,8 @@ def lf_sites(path, quantile=.5):
 
 def lf_pvalues(path, quantile=.5):
     # pvalues
-    df = pd.read_csv(os.path.join(path, 'outcome_analyses.txt'), sep='|', low_memory=False)
-    outcomes_df = pd.read_csv('../CTTI_20241017/outcomes.txt', sep='|')
+    df = pd.read_csv(os.path.join(path, 'outcome_analyses.txt.zip'), sep='|', low_memory=False)
+    outcomes_df = pd.read_csv(os.path.join(path, 'outcomes.txt.zip'), sep='|')
     primary_outcomes = outcomes_df[outcomes_df['outcome_type']=='PRIMARY']
     df = df[df['outcome_id'].isin(primary_outcomes['id'])]
 
@@ -77,7 +77,7 @@ def lf_pvalues(path, quantile=.5):
     return df
 
 def lf_update_more_recent(path, quantile=.5): #TODO clarify what this does
-    df = pd.read_csv(os.path.join(path, 'studies.txt'), sep='|', low_memory=False)
+    df = pd.read_csv(os.path.join(path, 'studies.txt.zip'), sep='|', low_memory=False)
     df['last_update_submitted_date'] = pd.to_datetime(df['last_update_submitted_date'])
     df['completion_date'] = pd.to_datetime(df['completion_date'])
     df['update_days'] = (df['last_update_submitted_date'] - df['completion_date']).dt.days
@@ -89,7 +89,7 @@ def lf_update_more_recent(path, quantile=.5): #TODO clarify what this does
     return df
 
 def lf_death_ae(path, quantile=.5):
-    df = pd.read_csv(path+'reported_event_totals.txt', sep = '|', low_memory=False)
+    df = pd.read_csv(path+'reported_event_totals.txt.zip', sep = '|', low_memory=False)
     df = df[df['event_type'] == 'deaths'].fillna(0)
     df = df.groupby('nct_id')['subjects_affected'].sum().reset_index()
     df['lf'] = df['subjects_affected'] <= df['subjects_affected'].quantile(quantile)
@@ -98,7 +98,7 @@ def lf_death_ae(path, quantile=.5):
     return df
 
 def lf_serious_ae(path, quantile=.5):
-    df = pd.read_csv(path+'reported_event_totals.txt', sep = '|', low_memory=False)
+    df = pd.read_csv(path+'reported_event_totals.txt.zip', sep = '|', low_memory=False)
     df = df[df['event_type'] == 'serious'].fillna(0)
     df = df.groupby('nct_id')['subjects_affected'].sum().reset_index()
     df['lf'] = df['subjects_affected'] <= df['subjects_affected'].quantile(quantile)
@@ -107,7 +107,7 @@ def lf_serious_ae(path, quantile=.5):
     return df
 
 def lf_all_ae(path, quantile=.5):
-    df = pd.read_csv(path+'reported_event_totals.txt', sep = '|', low_memory=False).fillna(0)
+    df = pd.read_csv(path+'reported_event_totals.txt.zip', sep = '|', low_memory=False).fillna(0)
     df = df.groupby('nct_id')['subjects_affected'].sum().reset_index()
     df['lf'] = df['subjects_affected'] <= df['subjects_affected'].quantile(quantile)
     df['lf'] = df['lf'].fillna(-1).astype('int')
@@ -115,10 +115,12 @@ def lf_all_ae(path, quantile=.5):
     return df
 
 def lf_status(path):
-    df = pd.read_csv(path+'studies.txt', sep='|', low_memory=False)
+    df = pd.read_csv(path+'studies.txt.zip', sep='|', low_memory=False)
     df['lf'] = -1
-    df.loc[df['overall_status'].isin(['Terminated', 'Withdrawn', 'Suspended', 'Withheld', 'No longer available', 'Temporarily not available']),['lf']] = 0
-    df.loc[df['overall_status'].isin(['Approved for marketing']),['lf']] = 1
+    # lower case all status and replace '_' with ' '
+    df['overall_status'] = df['overall_status'].str.lower().str.replace('_', ' ')
+    df.loc[df['overall_status'].isin(['terminated', 'withdrawn', 'suspended', 'withheld', 'no longer available', 'temporarily not available']),['lf']] = 0
+    df.loc[df['overall_status'].isin(['approved for marketing']),['lf']] = 1
     df['lf'] = df['lf'].fillna(-1).astype('int')
     df = reorder_columns(df, ['nct_id', 'lf'])
     return df
@@ -324,10 +326,10 @@ if __name__=='__main__':
     hint.rename(columns={'nctid': 'nct_id'}, inplace=True)
     print(f"hint['label'].value_counts() {hint['label'].value_counts()}")
 
-    study_df = pd.read_csv(os.path.join(args.CTTI_PATH, 'studies.txt'), sep='|', low_memory=False)
+    study_df = pd.read_csv(os.path.join(args.CTTI_PATH, 'studies.txt.zip'), sep='|', low_memory=False)
     study_df.dropna(subset=['phase'], inplace=True)
 
-    intervention_df = pd.read_csv(os.path.join(args.CTTI_PATH, 'interventions.txt'), sep='|', low_memory=False)
+    intervention_df = pd.read_csv(os.path.join(args.CTTI_PATH, 'interventions.txt.zip'), sep='|', low_memory=False)
     intervention_df = intervention_df[intervention_df['intervention_type'].isin(['Drug', 'Biological'])]
     study_df = study_df[study_df['nct_id'].isin(set(intervention_df['nct_id']))]
 
