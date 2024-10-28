@@ -1,7 +1,8 @@
 # get_news paths
 
 # HF_HOME="/srv/local/data/chufan2/huggingface/"
-CTTI_PATH="./CTTI/"
+# CTTI_PATH="./CTTI/"
+CTTI_PATH="./CTTI_old/"
 
 SENTIMENT_MODEL="yiyanghkust/finbert-tone"
 SENTENCE_ENCODER="microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext"
@@ -24,4 +25,16 @@ GPT_PATH="./supplementary/llm_prediction_on_pubmed/pubmed_gpt_outcomes.csv"
 LINKAGE_PATH="./supplementary/clinical_trial_linkage/Merged_(ALL)_trial_linkage_outcome_df_FDA_updated.csv"
 STUDIES_WITH_NEWS_PATH="./supplementary/news_headlines/studies_with_news.csv"
 NEWS_PATH="./supplementary/news_headlines/news.csv"
-python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --NEWS_PATH=$NEWS_PATH
+
+# pass in --get_thresholds to get thresholds for first run, then remove it for subsequent runs. It logs the thresholds to a csv file, which is then used in the subsequent runs.
+label_mode="RF"
+# python labeling/lfs.py --get_thresholds=True --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --NEWS_PATH=$NEWS_PATH --label_mode=$label_mode
+python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --NEWS_PATH=$NEWS_PATH --label_mode=$label_mode
+label_mode="LR"
+python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --NEWS_PATH=$NEWS_PATH --label_mode=$label_mode
+label_mode="SVM"
+python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --NEWS_PATH=$NEWS_PATH --label_mode=$label_mode
+label_mode="DP"
+python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --NEWS_PATH=$NEWS_PATH --label_mode=$label_mode
+label_mode="DP_nohint"
+python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --NEWS_PATH=$NEWS_PATH --label_mode=$label_mode
