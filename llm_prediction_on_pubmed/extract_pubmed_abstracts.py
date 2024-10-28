@@ -7,7 +7,7 @@ import time
 import argparse
 from utils import drug_biologics_nct_ids
 import pandas as pd
-
+from dotenv import load_dotenv
 
 
 def get_data(element, source):
@@ -164,13 +164,14 @@ def main(data_path,NCBI_api_key, dev = False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default= None, help='Path to the CITI data folder')
-    parser.add_argument('--NCBI_api_key', type=str, default= None, help='NCBI API key')
+    # parser.add_argument('--NCBI_api_key', type=str, default= None, help='NCBI API key')
     parser.add_argument('--save_path', type=str, default= None, help='Path to save the extracted data')
     parser.add_argument('--dev', action='store_true', help='Run in development mode')
     args = parser.parse_args()
     
     data_path = args.data_path
-    NCBI_api_key = args.NCBI_api_key
+    load_dotenv()
+    NCBI_api_key = os.getenv('NCBI_api_key')
     
     if data_path is None:
         raise ValueError('Please provide the path to the CITI data folder')
