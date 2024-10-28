@@ -114,14 +114,16 @@ def filter_articles(nct_id, trial_basic_info, pubmed_files):
             if trial_basic_info[nct_id]['completion_date']is None or trial_basic_info[nct_id]['completion_date'] == '':
                 for reference in reference_list:
                     if reference['Reference type'].lower() in ['derived','result']:
-                        filtered_articles.append(reference)
+                        if nct_id in reference['Abstract']:
+                            filtered_articles.append(reference)
                 continue
             
             for reference in reference_list:
                 if reference['Reference type'].lower() in ['derived','result']:
                     # if reference['Date of Publication'] is not available, append the reference
                     if reference['Date of Publication'] == '':
-                        filtered_articles.append(reference)
+                        if nct_id in reference['Abstract']:
+                            filtered_articles.append(reference)
                         continue
                     trial_completion_date = trial_basic_info[nct_id]['completion_date']
                     trial_completion_date = datetime.datetime.strptime(trial_completion_date, datetime_format)
@@ -136,7 +138,8 @@ def filter_articles(nct_id, trial_basic_info, pubmed_files):
                 # print('appending all articles')
                 for reference in reference_list:
                     if reference['Reference type'].lower() in ['derived','result']:
-                        filtered_articles.append(reference)
+                        if nct_id in reference['Abstract']:
+                            filtered_articles.append(reference)
                 
     return filtered_articles
 

@@ -1,4 +1,3 @@
-from tkinter import N
 from Bio import Medline
 import urllib.request as urllib
 import json
@@ -6,12 +5,9 @@ from tqdm import tqdm
 import os
 import time
 import argparse
-
-
-
-
-
-
+from utils import drug_biologics_nct_ids
+import pandas as pd
+from dotenv import load_dotenv
 
 
 def get_data(element, source):
@@ -49,28 +45,27 @@ def get_all_data(article):
 
 
 def main(data_path,NCBI_api_key, dev = False):
+    print('Extracting data from study_references.txt')
     study_ref_path = os.path.join(data_path,'study_references.txt')
     
-    study_ref_file = open(study_ref_path, "r").read().split('\n')
-    # study_ref_file[-1]
-
-
-    # extract id nct_id, pmid, reference_type and citation and store in a dictionary
-    print('Extracting data from study_references.txt')
-    study_ref_dict = {'id':{},'nct_id':{},'pmid':{},'reference_type':{},'citation':{}} # create a dictionary with empty lists as values
-    for i in tqdm(range(1,len(study_ref_file)-1)):
-        study_ref_dict['id'][i-1] = study_ref_file[i].split('|')[0]
-        study_ref_dict['nct_id'][i-1] = study_ref_file[i].split('|')[1]
-        study_ref_dict['pmid'][i-1] = study_ref_file[i].split('|')[2]
-        study_ref_dict['reference_type'][i-1] = study_ref_file[i].split('|')[3]
-        study_ref_dict['citation'][i-1] = study_ref_file[i].split('|')[4]
-
-
+    # study_ref_file = open(study_ref_path, "r").read().split('\n')
+    study_ref_df = pd.read_csv(study_ref_path, sep='|')
+    study_ref_df = study_ref_df.dropna(subset=['pmid'])
+    
+    # filter the nct_id that are drug or biological
+    intervention_path = os.path.join(data_path,'interventions.txt')
+    drug_biologics_nct_ids_list = drug_biologics_nct_ids(intervention_path)
+    study_ref_df = study_ref_df[study_ref_df['nct_id'].isin(drug_biologics_nct_ids_list)].reset_index(drop=True)
+    print(f'Number of nct_id with drug or biological intervention: {len(study_ref_df)}')
+    study_ref_dict = study_ref_df.to_dict()                                 
+    
+    
     from collections import defaultdict
     nct_id_dict = defaultdict(list) # create a dictionary with empty lists as values
-    for i in range(1,len(study_ref_file)-1):
-        nct_id_dict[study_ref_file[i].split('|')[1]].append(study_ref_file[i].split('|')[2:])
-    len(nct_id_dict)
+    for i in range(len(study_ref_df)):
+        nct_id_dict[study_ref_df['nct_id'][i]].append([study_ref_df['pmid'][i],study_ref_df['reference_type'][i]])
+        # nct_id_dict[study_ref_file[i].split('|')[1]].append(study_ref_file[i].split('|')[2:])
+    print('Number of nct_id with references:', len(nct_id_dict))
 
 
 
@@ -95,6 +90,8 @@ def main(data_path,NCBI_api_key, dev = False):
         try:
         
             nct_id = k
+            
+            
             reference_data = {}
             reference_data['nct_id'] = nct_id
             
@@ -116,7 +113,10 @@ def main(data_path,NCBI_api_key, dev = False):
                     if pmid in existing_pmids:
                         continue
                 is_file_updated = True  
-                ref_type = v[i][1]  
+                ref_type = v[i][1]
+                # ignore background references
+                if ref_type.lower() == 'background':
+                    continue 
                 # print(nct_id, pmid, ref_type)
                 text_path = './pubmed_data.txt'
                 urllib.urlretrieve(MEDLINE_TEXT_URL + str(pmid), text_path)
@@ -164,13 +164,14 @@ def main(data_path,NCBI_api_key, dev = False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default= None, help='Path to the CITI data folder')
-    parser.add_argument('--NCBI_api_key', type=str, default= None, help='NCBI API key')
+    # parser.add_argument('--NCBI_api_key', type=str, default= None, help='NCBI API key')
     parser.add_argument('--save_path', type=str, default= None, help='Path to save the extracted data')
     parser.add_argument('--dev', action='store_true', help='Run in development mode')
     args = parser.parse_args()
     
     data_path = args.data_path
-    NCBI_api_key = args.NCBI_api_key
+    load_dotenv()
+    NCBI_api_key = os.getenv('NCBI_api_key')
     
     if data_path is None:
         raise ValueError('Please provide the path to the CITI data folder')

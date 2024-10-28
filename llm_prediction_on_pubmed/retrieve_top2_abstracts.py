@@ -87,6 +87,8 @@ def main(data_path,save_path,dev = False):
         # if nct_id in pubmed_df['nct_id'].values:
         #     continue
         filtered_articles_list = filter_articles(nct_id, trial_basic_info, pubmed_files)
+        if len(filtered_articles_list) == 0:  # if no articles are found for the trial
+            continue
         top_2_similar_articles = extract_similar_pubmed_articles(nct_id, trial_basic_info, filtered_articles_list, model)
         row = {
         'nct_id': nct_id,
@@ -114,12 +116,12 @@ def main(data_path,save_path,dev = False):
                 pubmed_all_data = json.load(f)
                 f.close()
         
-        # Get article counts for ['background','derived','result']
-        for article_type in ['background','derived','result']:
-            row[article_type] = 0
-            for article in pubmed_all_data['References']:
-                if article['Reference type'].lower() == article_type:
-                    row[article_type] += 1
+        # # Get article counts for ['background','derived','result']
+        # for article_type in ['background','derived','result']:
+        #     row[article_type] = 0
+        #     for article in pubmed_all_data['References']:
+        #         if article['Reference type'].lower() == article_type:
+        #             row[article_type] += 1
                     
         # check if the PMID is in the new_rows
         # check if the ncit_id exists in the new_rows
