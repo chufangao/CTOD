@@ -1,9 +1,6 @@
-from operator import is_
-from tkinter import N
 from Bio import Medline
 import urllib.request as urllib
 import json
-from torch import le
 from tqdm import tqdm
 import os
 import time
