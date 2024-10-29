@@ -87,10 +87,15 @@ def search_and_extract_pubmed(data_path,NCBI_api_key,email = ''):
                 reference_list = existing_reference_dict['References']
                 #get PMID from existing references
                 existing_pmids = [reference_list[i]['PMID'] for i in range(len(reference_list))]
+                existing_reference_types = [reference_list[i]['Reference type'].lower() for i in range(len(reference_list))]
+                if 'result' in existing_reference_types or 'search_result' in existing_reference_types:
+                    continue
                 trial_ref_exists_in_data = True
             
             if trial_ref_exists_in_data:
-                pmids = pmids - existing_pmids
+                # filter out existing pmids
+                pmids = [pmid for pmid in pmids if pmid not in existing_pmids]
+                
             if len(pmids) == 0:
                 continue
             else:

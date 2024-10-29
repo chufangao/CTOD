@@ -12,8 +12,8 @@ SAVE_PATH=/srv/local/data/CTO
 echo "Getting LLM predictions on Pubmed data"
 cd llm_prediction_on_pubmed 
 
-echo "Extracting and Updating Pubmed data"
-python extract_pubmed_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev 
+# echo "Extracting and Updating Pubmed data"
+# python extract_pubmed_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev 
 echo "Search Pubmed and extract abstracts"
 python extract_pubmed_abstracts_through_search.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
 # echo "Retrieving top 2 relevant abstracts"
