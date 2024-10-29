@@ -7,6 +7,7 @@ import pandas as pd
 from trial_linkage_utils import map_drug_names
 from multiprocessing import Pool, cpu_count
 import argparse
+from support_functions import drug_biologics_nct_ids
 
 def map_drug_names_wrapper(args):
     study, drug_mapping = args
@@ -16,6 +17,11 @@ def map_drug_names_wrapper(args):
 
 def extract_features_trial_info(data_path,save_path, dev = False):
 
+    # filter the nct_id that are drug or biological
+    intervention_path = os.path.join(data_path,'interventions.txt')
+    drug_biologics_nct_ids_list = drug_biologics_nct_ids(intervention_path)
+    drug_biologics_nct_ids_list = list(set(drug_biologics_nct_ids_list))    
+    print(f'Number of nct_id with drug or biological intervention: {len(drug_biologics_nct_ids_list)}')
     # Read the studies.txt file --> Basic info about the trials (nct_id, official_title, phase, start_date, completion_date)
     print('Extracting basic trial info')
     file_data = pd.read_csv(os.path.join(data_path, 'studies.txt'),sep='|',parse_dates=['start_date','completion_date'])
@@ -26,6 +32,9 @@ def extract_features_trial_info(data_path,save_path, dev = False):
     file_data = file_data[['nct_id','official_title','phase','start_date','completion_date','brief_title']]
     print('before removing trials with no start_date or completion_date:',file_data.shape)
 
+    # filter the nct_id that are drug or biological
+    file_data = file_data[file_data['nct_id'].isin(drug_biologics_nct_ids_list)]
+    print('Number of nct_id with drug or biological intervention from studies file: ',file_data.shape)
 
     # remove rows with nan for start_date and completion_date
     file_data = file_data.dropna(subset=['start_date','completion_date'])

@@ -9,6 +9,16 @@ import datetime
 from sentence_transformers import util
 
 
+
+def drug_biologics_nct_ids(intervention_path):
+    df = pd.read_csv(intervention_path, sep='|')
+    df = df[['nct_id','intervention_type']]
+    type_list = ['drug','biological']
+    df = df[df['intervention_type'].str.lower().isin(type_list)]
+    
+    return df['nct_id'].tolist()
+
+
 # study info 
 def extract_study_basic_info(data_path, info_to_extract = ['official_title','start_date','completion_date']):
     '''

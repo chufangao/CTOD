@@ -14,19 +14,19 @@ cd llm_prediction_on_pubmed
 
 # echo "Extracting and Updating Pubmed data"
 # python extract_pubmed_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev 
-echo "Search Pubmed and extract abstracts"
-python extract_pubmed_abstracts_through_search.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
+# echo "Search Pubmed and extract abstracts"
+# python extract_pubmed_abstracts_through_search.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
 # echo "Retrieving top 2 relevant abstracts"
-# python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH --dev
+# python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
 # echo "Obtaining LLM predictions"
-# python get_llm_predictions.py  --save_path $SAVE_PATH --dev
+# python get_llm_predictions.py  --save_path $SAVE_PATH #--dev
 # python clean_and_extract_final_outcomes.py --save_path $SAVE_PATH 
 
 
 # # # # Getting Clinical Trial Linkage
-# echo "Getting Clinical Trial Linkage"
-# cd ..
-# cd clinical_trial_linkage
+echo "Getting Clinical Trial Linkage"
+cd ..
+cd clinical_trial_linkage
 
 # echo "Downloading FDA orange book and drug code dictionary"
 # python download_data.py --save_path $SAVE_PATH   # centralize the links in the .sh
@@ -34,25 +34,25 @@ python extract_pubmed_abstracts_through_search.py --data_path $DATA_PATH --save_
 # python process_drugbank.py --save_path $SAVE_PATH
 # python create_drug_mapping.py --save_path $SAVE_PATH
 
-# echo "Extracting trial info and trial embeddings"
-# python extract_trial_info.py --data_path $DATA_PATH --save_path $SAVE_PATH --dev
-# python get_embedding_for_trial_linkage.py --save_path $SAVE_PATH --num_workers 8 --gpu_ids 4,5,6 --dev
+echo "Extracting trial info and trial embeddings"
+# python extract_trial_info.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
+# python get_embedding_for_trial_linkage.py --save_path $SAVE_PATH --num_workers 8 --gpu_ids 4,5,6 #--dev
 
 
 # echo 'Linking Clinical Trials across phases'
 # echo 'Phase 4'
-# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase4' --num_workers 1 --gpu_ids 4 --dev
+# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase4' --num_workers 1 --gpu_ids 4 #--dev
 # echo 'Phase 3'
-# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase3' --num_workers 1 --gpu_ids 4 --dev
+# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase3' --num_workers 1 --gpu_ids 4 #--dev
 # echo 'Phase 2/ Phase 3'
-# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase2/phase3' --num_workers 1 --gpu_ids 4 --dev
+# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase2/phase3' --num_workers 1 --gpu_ids 4 #--dev
 # echo 'Phase 2'
-# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase2' --num_workers 1 --gpu_ids 4 --dev
+# python create_trial_linkage.py --save_path $SAVE_PATH --target_phase 'phase2' --num_workers 1 --gpu_ids 4 #--dev
 
 # echo 'Extract outcomes from Clinical Trial Linkage'
 # python extract_outcome_from_trial_linkage.py --save_path $SAVE_PATH 
 # echo 'Matching with FDA orange book'
-# python match_fda_approvals.py --save_path $SAVE_PATH --dev
+# python match_fda_approvals.py --save_path $SAVE_PATH #--dev
 
 
 # News
