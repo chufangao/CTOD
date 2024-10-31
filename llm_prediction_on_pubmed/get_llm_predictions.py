@@ -6,9 +6,10 @@ import pandas as pd
 import json
 import os
 from tqdm import tqdm
-from llama_index.llms.azure_openai import AzureOpenAI
-from llama_index.llms.openai import OpenAI
-from llama_index.core import Settings
+# from llama_index.llms.azure_openai import AzureOpenAI
+# from llama_index.llms.openai import OpenAI
+# from llama_index.core import Settings
+from openai import OpenAI, AzureOpenAI
 import argparse
 from dotenv import load_dotenv
 import numpy as np
@@ -16,9 +17,8 @@ import time
 
 
 
-def main(top_2_pubmed_path,save_path,llm, upd_nct = None, dev = False):
+def main(top_2_pubmed_path,save_path,model_name,llm, upd_nct = None, dev = False, azure = False, temperature=0.2):
 
-    Settings.llm = llm
 
     # read csv file
     pubmed_df = pd.read_csv(top_2_pubmed_path)
@@ -34,7 +34,7 @@ Guidelines:
 - **Completeness**: Ensure there are no missing statistical tests and descriptions in JSON output.
 - **Data Verification**: Before concluding the final answer, always verify that your observations align with the original trial description. Do not create any new information or hallucinate.
 
-Additionally, generate a set of trial relevant questions and answers from the given abstracts. The questions should have two kinds of answers. One is a short descriptive sentence answering the question. The second is a set of five options, of which one is correct. 
+Additionally, generate 3 trial relevant questions and answers from the given abstracts. The questions should have two kinds of answers. One is a short descriptive sentence answering the question. The second is a set of five options, of which one is correct. 
 
 Guidelines for the questions and answers:
 - The questions shouldn't be on the trial outcome.
@@ -93,10 +93,17 @@ Begin!
     upd_nctid_list = []
     for i, row in tqdm(pubmed_df.iterrows(), total=pubmed_df.shape[0]):
             nct_id = row['nct_id']
+            if i >= 30000:
+                continue
+            # if i< 20000 or i >= 40000:
+            #     continue
+            # if i < 40000:
+            #     continue
             # check if the nct_id is in the updated nct_ids
             if nct_id not in upd_nct:
                 continue
-            if row['top_1_similar_article_title'] == '' or row['top_2_similar_article_title'] == None:
+            if row['top_1_similar_article_title'] == '' or row['top_1_similar_article_title'] == None:
+                print('No similar article found for:', nct_id)
                 continue 
             
             official_title = row['official_title']
@@ -122,8 +129,20 @@ Begin!
             edited_prompt = edited_prompt.replace('[ABSTRACT]', abstract_string)
             
             # print(edited_prompt)
+            # try:
+            # response = llm.complete(edited_prompt).text
             try:
-                response = llm.complete(edited_prompt).text
+                completion = llm.chat.completions.create(
+                                    model=model_name,
+                                    # response_format= {"type": "named_tuple"},
+                                    messages=[
+                                                {
+                                                    "role": "user",
+                                                    "content": prompt,
+                                                }],
+                                    temperature=temperature,
+                                )
+                response = completion.choices[0].message.content
             except:
                 print('Error in:', nct_id)
                 continue
@@ -163,23 +182,40 @@ Begin!
 
 
 if __name__ == '__main__':
-    OPENAI_API_KEY= None # set your openai api key here
-    load_dotenv()
-    try:
-        OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-    except:
-        pass
-    
-    temperature=0.2
-    if OPENAI_API_KEY is None:
-        raise ValueError('Please set the OPENAI_API_KEY')
-    
     parser = argparse.ArgumentParser()
     # parser.add_argument('--top_2_pubmed_path', type=str, default= None, help='Path to the dataframe with top 2 extracted pubmed articles')
     parser.add_argument('--save_path', type=str, default= None, help='Path to save the LLM decisions')
     parser.add_argument('--dev', action='store_true', help='Run in development mode')
+    parser.add_argument('--azure', action='store_true', help='Use Azure OpenAI')
     
     args = parser.parse_args()
+    
+    
+    
+    
+    OPENAI_API_KEY= None # set your openai api key here
+    load_dotenv()
+    try:
+        if args.azure:
+            AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
+            OPENAI_API_BASE = os.getenv('OPENAI_API_BASE')
+            OPENAI_API_VERSION = os.getenv('OPENAI_API_VERSION')
+            OPENAI_API_TYPE = os.getenv('OPENAI_API_TYPE')
+            AZURE_OPENAI_DEPLOYMENT = os.getenv('AZURE_OPENAI_DEPLOYMENT')
+            
+        else:    
+            OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    except:
+        pass
+    
+    temperature=0.2
+    if OPENAI_API_KEY is None and not args.azure:
+        raise ValueError('Please set the OPENAI_API_KEY')
+    if args.azure:
+        if AZURE_OPENAI_API_KEY is None:
+            raise ValueError('Please set the AZURE_OPENAI_API_KEY')
+    
+    
     
     top_2_pubmed_path = os.path.join(args.save_path,'llm_predictions_on_pubmed','top_2_extracted_pubmed_articles.csv')
     
@@ -202,11 +238,29 @@ if __name__ == '__main__':
     
     
     print('Initializing LLM')
-    llm = OpenAI(model="gpt-3.5-turbo", temperature = temperature, api_key=OPENAI_API_KEY,
-                 response_format = "json_object")
-
+    if args.azure:
+        # llm = AzureOpenAI(model=AZURE_OPENAI_DEPLOYMENT,
+        #                   deployment_name = AZURE_OPENAI_DEPLOYMENT,
+        #                   api_key = AZURE_OPENAI_API_KEY,
+        #                   azure_endpoint = OPENAI_API_BASE,
+        #                   api_version = OPENAI_API_VERSION,
+        #                   temperature = temperature,  
+        #                   response_format = "json_object")
+        llm = AzureOpenAI(
+                api_key=AZURE_OPENAI_API_KEY, 
+                azure_endpoint=OPENAI_API_BASE,
+                azure_deployment=AZURE_OPENAI_DEPLOYMENT,
+                api_version=OPENAI_API_VERSION,
+                )
+        model_name = AZURE_OPENAI_DEPLOYMENT
+    else:
+        print('Using OpenAI')
+        # llm = OpenAI(model="gpt-3.5-turbo", temperature = temperature, api_key=OPENAI_API_KEY,
+        #             response_format = "json_object")
+        llm = OpenAI(api_key=OPENAI_API_KEY)
+        model_name = "gpt-3.5-turbo"
     
     
-    main(top_2_pubmed_path,save_path,llm,upd_nct,args.dev)
+    main(top_2_pubmed_path,save_path,model_name,llm,upd_nct,args.dev,args.azure,temperature=temperature)
     
     

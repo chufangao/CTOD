@@ -9,7 +9,7 @@ import numpy as np
 import pickle
 import glob
 import argparse
-
+import time
 
 def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
     if not os.path.exists(save_path):
@@ -148,16 +148,35 @@ def get_trial_linkage_weak_outcome_labels(save_path,trial_linkage_path):
         
         print(f'Extracting outcome labels for {phase_names}')
         trial_linkage_outcome_labels = {}
+        # get current date
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        current_date = datetime.strptime(current_date, '%Y-%m-%d')
         
         for i in tqdm(range(adj_matrix.shape[1])):
             trial = index_to_trial_map[f'{phase} connected'][i]
             trial_linkage_outcome_labels[trial] = {}
             if np.sum(adj_matrix[:,i]) == 0:
-                trial_linkage_outcome_labels[trial]['outcome'] = 'Failure'
+                #get completion date
+                trial_completion_date = trial_info[trial]['completion_date']
+                # convert to datetime
+                trial_completion_date = datetime.strptime(trial_completion_date, '%Y-%m-%d')
+                
+                if trial_completion_date > current_date - pd.DateOffset(months=6):
+                    trial_linkage_outcome_labels[trial]['outcome'] = 'Recent trial'
+                else:
+                    trial_linkage_outcome_labels[trial]['outcome'] = 'Failure'
             elif any(edge_values[:,i] > 0):
                 trial_linkage_outcome_labels[trial]['outcome'] = 'Success'
             else:
-                trial_linkage_outcome_labels[trial]['outcome'] = 'Not sure'
+                #get completion date
+                trial_completion_date = trial_info[trial]['completion_date']
+                # convert to datetime
+                trial_completion_date = datetime.strptime(trial_completion_date, '%Y-%m-%d')
+                
+                if trial_completion_date > current_date - pd.DateOffset(months=6):
+                    trial_linkage_outcome_labels[trial]['outcome'] = 'Recent trial'
+                else:
+                    trial_linkage_outcome_labels[trial]['outcome'] = 'Not sure'
                 
             # get additional info (use connected phase)
             for ph in phase_connect[phase]:

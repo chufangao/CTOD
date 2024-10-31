@@ -109,12 +109,12 @@ def main(data_path,save_path,dev = False):
             row[f'top_{k}_similar_article_author_affiliation'] = article['Author(s) Affiliation']
             
         # Get counts of the references or pubmed articles per trial
-        for json_file in pubmed_files:
-            if nct_id not in json_file:
-                continue
-            with open(json_file, 'r') as f:
-                pubmed_all_data = json.load(f)
-                f.close()
+        # for json_file in pubmed_files:
+        #     if nct_id not in json_file:
+        #         continue
+        #     with open(json_file, 'r') as f:
+        #         pubmed_all_data = json.load(f)
+        #         f.close()
         
         # # Get article counts for ['background','derived','result']
         # for article_type in ['background','derived','result']:

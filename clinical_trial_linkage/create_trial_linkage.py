@@ -179,10 +179,17 @@ def main():
     num_workers = args.num_workers # number of workers
     gpu_ids = args.gpu_ids.split(',') # list of gpu ids to use
     
-    # features to use for linking 
-    info_list = [ 'official_title','intervention_passage','brief_summary','eligibility','condition_passage']
-    info_wei_list = {'official_title': 1,'intervention_passage': 1,'brief_summary':1,'eligibility':1,'condition_passage':1}
     
+    # features to use for linking 
+    # if target_phase == 'phase4':
+    #     info_list = [ 'official_title','intervention_passage','brief_summary','eligibility','condition_passage','lead_sponsor']
+    #     info_wei_list = {'official_title': 1,'intervention_passage': 1,'brief_summary':1,'eligibility':1,'condition_passage':1,'lead_sponsor':1}
+    # else:
+    #     info_list = [ 'official_title','intervention_passage','brief_summary','eligibility','condition_passage']
+    #     info_wei_list = {'official_title': 1,'intervention_passage': 1,'brief_summary':1,'eligibility':1,'condition_passage':1}
+    
+    info_list = [ 'condition_passage', 'intervention_passage','official_title','lead_sponsor','brief_summary']#,'eligibility']
+    info_wei_list = {'condition_passage': 2, 'intervention_passage': 2, 'official_title': 1, 'lead_sponsor': 1, 'brief_summary': 0.5}
     
     print(f'Creating linkage for {target_phase}')
     print(f'Using features: {info_list}')
