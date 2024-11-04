@@ -16,8 +16,8 @@ cd llm_prediction_on_pubmed
 # python extract_pubmed_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev 
 # echo "Search Pubmed and extract abstracts"
 # python extract_pubmed_abstracts_through_search.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
-echo "Retrieving top 2 relevant abstracts"
-python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
+# echo "Retrieving top 2 relevant abstracts"
+# python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH #--dev
 # echo "Obtaining LLM predictions"
 # python get_llm_predictions.py  --save_path $SAVE_PATH --azure #--dev
 # python clean_and_extract_final_outcomes.py --save_path $SAVE_PATH 
@@ -25,8 +25,8 @@ python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH 
 
 # # # # Getting Clinical Trial Linkage
 # echo "Getting Clinical Trial Linkage"
-# cd ..
-# cd clinical_trial_linkage
+cd ..
+cd clinical_trial_linkage
 
 # echo "Downloading FDA orange book and drug code dictionary"
 # python download_data.py --save_path $SAVE_PATH   # centralize the links in the .sh
@@ -55,6 +55,7 @@ python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH 
 # python match_fda_approvals.py --save_path $SAVE_PATH #--dev
 
 
+
 # News
 
 
@@ -62,6 +63,8 @@ python retrieve_top2_abstracts.py --data_path $DATA_PATH --save_path $SAVE_PATH 
 
 
 # Labeling
-
+# echo "Copy all labeling results to the labeling folder"
+cd ..
+python arrange_labels.py --save_path $SAVE_PATH
 
 # limit it to drugs

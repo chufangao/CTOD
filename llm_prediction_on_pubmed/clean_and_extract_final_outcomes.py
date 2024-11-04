@@ -33,6 +33,14 @@ def main(gpt_decisions_path,top_2_pubmed_path):
             # add to gpt_trial_outcomes using concat
             gpt_trial_outcomes = pd.concat([gpt_trial_outcomes, pd.DataFrame({'nct_id': [trial], 'outcome': [trial_outcome]})])
             
+        elif os.path.exists(os.path.join(gpt_decisions_path,f'{trial}_gpt_response.txt')):  
+            with open(os.path.join(gpt_decisions_path,f'{trial}_gpt_response.txt'), 'r') as f:
+                trial_outcome = f.read()
+                f.close()
+            trial_outcome = trial_outcome.split(""""outcome":""")[-1].split(',')[0].split('"')[1].split('"')[0]
+            
+            # add to gpt_trial_outcomes using concat
+            gpt_trial_outcomes = pd.concat([gpt_trial_outcomes, pd.DataFrame({'nct_id': [trial], 'outcome': [trial_outcome]})])
 
     # get common nct_ids in top2_pubmed_pd and gpt_trial_outcomes
     common_nct_ids = list(set(top2_pubmed_pd['nct_id'].values).intersection(set(gpt_trial_outcomes['nct_id'].values)))  

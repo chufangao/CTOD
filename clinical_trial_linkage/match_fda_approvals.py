@@ -176,7 +176,8 @@ def match_FDA_approvals_main(save_path,merged_all_pd_path,cross_encoder,dev=Fals
             if merged_all_pd.iloc[i]['outcome'] != 'Success':
                 merged_all_pd.at[i, 'outcome'] = 'Success'
 
-    merge_all_save_path = merged_all_pd_path.split('.csv')[0] + '_FDA_updated.csv'
+    # merge_all_save_path = merged_all_pd_path.split('.csv')[0] + '_FDA_updated.csv'
+    merge_all_save_path = os.path.join(save_path, 'outcome_labels','Merged_all_trial_linkage_outcome_df__FDA_updated.csv' )
     merged_all_pd.to_csv(merge_all_save_path, index=False)
     
     print('Finished updating merged_all_pd with FDA approvals')
