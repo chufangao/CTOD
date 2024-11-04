@@ -93,12 +93,6 @@ Begin!
     upd_nctid_list = []
     for i, row in tqdm(pubmed_df.iterrows(), total=pubmed_df.shape[0]):
             nct_id = row['nct_id']
-            if i >= 30000:
-                continue
-            # if i< 20000 or i >= 40000:
-            #     continue
-            # if i < 40000:
-            #     continue
             # check if the nct_id is in the updated nct_ids
             if nct_id not in upd_nct:
                 continue
