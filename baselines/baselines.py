@@ -28,11 +28,12 @@ def bootstrap_eval(y_true, y_pred, y_prob, num_samples=100):
 # run = 'pre2020'
 # run = 'post2020'
 
-# for run in ['TOP','comparison_with_TOP', 'pre2020', 'post2020']:
-train_df = pd.concat([pd.read_csv(f) for f in glob.glob(os.path.join(path, "phase*train.csv"))])
-valid_df = pd.concat([pd.read_csv(f) for f in glob.glob(os.path.join(path, "phase*valid.csv"))])
-test_df = pd.concat([pd.read_csv(f) for f in glob.glob(os.path.join(path, "phase*test.csv"))])
-for run in ['comparison_with_TOP',]:
+# # for run in ['TOP','comparison_with_TOP', 'pre2020', 'post2020']:
+# train_df = pd.concat([pd.read_csv(f) for f in glob.glob(os.path.join(path, "phase*train.csv"))])
+# valid_df = pd.concat([pd.read_csv(f) for f in glob.glob(os.path.join(path, "phase*valid.csv"))])
+# test_df = pd.concat([pd.read_csv(f) for f in glob.glob(os.path.join(path, "phase*test.csv"))])
+
+for run in ['train']:
 # for run in ['post2020']:
     if run == 'TOP':
         path = './clinical-trial-outcome-prediction/data/'
