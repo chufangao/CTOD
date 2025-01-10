@@ -1,11 +1,11 @@
-from pytrial.tasks.trial_outcome import HINT, SPOT
-from pytrial.tasks.trial_outcome.data import (
-    TrialOutcomeDataset,
-    TrialOutcomeDatasetBase,
-)
-
+# get current file path
+import os
+import sys
+# get current file path
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),'./PyTrial'))
+from pytrial.tasks.trial_outcome import SPOT
+from pytrial.tasks.trial_outcome.data import TrialOutcomeDataset
 from sklearn.metrics import f1_score, average_precision_score, roc_auc_score
-
 import json
 import os
 import pickle

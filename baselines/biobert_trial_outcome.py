@@ -40,52 +40,80 @@ class NN(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(NN, self).__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 32)
-        self.fc3 = nn.Linear(32, 1)
-        self.dropout = nn.Dropout(0.1)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc3 = nn.Linear(hidden_dim, 1)
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.xavier_uniform_(self.fc3.weight)
         
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = self.fc2(x)
-        x = self.fc3(x)
-        x = torch.sigmoid(x)
+        x = F.relu(self.fc2(x))
+        x = torch.sigmoid(self.fc3(x))
         return x
     
-def bootstrap_testing(preds, target, threshold, bootstrap_num=20):
-    results = []
-    num_samples = len(target)
-    for _ in range(bootstrap_num):
-        cur_result = {}
-        idx = np.random.choice(num_samples, num_samples, replace=True)
-        cur_result["preds"] = preds[idx]
-        cur_result["target"] = target[idx]
+def bootstrap_testing( y_prob, y_true, num_samples=100):
+    y_pred = (y_prob > 0.5).astype(int)
+    y_true = y_true.astype(int) 
+    f1s = []
+    aps = []
+    rocs = []
+    for _ in range(num_samples):
+        indices = np.random.choice(len(y_true), len(y_true), replace=True)
+        # convert to multiclass for precision recall curve
+        y_true_multi = np.zeros((len(y_true), 2))
+        y_true_multi[np.arange(len(y_true)), y_true] = 1
+        y_pred_multi = np.zeros((len(y_pred), 2))
+        y_pred_multi[np.arange(len(y_pred)), y_pred] = 1
+        y_prob_multi = np.zeros((len(y_prob), 2))
+        y_prob_multi[np.arange(len(y_prob)), y_pred] = y_prob
+        
+        # accs.append(np.mean(y_true[indices] == y_pred[indices]))
+        f1s.append(f1_score(y_true_multi[indices], y_pred_multi[indices], average='weighted'))
+        aps.append(average_precision_score(y_true_multi[indices], y_prob_multi[indices], average='weighted'))
+        rocs.append(roc_auc_score(y_true_multi[indices], y_pred_multi[indices], average='weighted'))
+    return np.mean(f1s), np.std(f1s), np.mean(aps), np.std(aps), np.mean(rocs), np.std(rocs)
+    
+# def bootstrap_testing(preds, target, threshold, bootstrap_num=20):
+#     results = []
+#     num_samples = len(target)
+#     for _ in range(bootstrap_num):
+#         cur_result = {}
+#         idx = np.random.choice(num_samples, num_samples, replace=True)
+#         cur_result["preds"] = preds[idx]
+#         cur_result["target"] = target[idx]
 
-        # Apply the threshold for F1 score calculation
-        f1 = f1_score(cur_result["target"], (cur_result["preds"] >= threshold).astype(int))
-        roc_auc = roc_auc_score(cur_result["target"], cur_result["preds"])
-        pr_auc = average_precision_score(cur_result["target"], cur_result["preds"])
+#         # Apply the threshold for F1 score calculation
+#         f1 = f1_score(cur_result["target"], (cur_result["preds"] >= threshold).astype(int))
+#         roc_auc = roc_auc_score(cur_result["target"], cur_result["preds"])
+#         pr_auc = average_precision_score(cur_result["target"], cur_result["preds"])
 
-        results.append({"F1": f1, "ROC-AUC": roc_auc, "PR-AUC": pr_auc})
+#         results.append({"F1": f1, "ROC-AUC": roc_auc, "PR-AUC": pr_auc})
 
-    result = {}
-    if len(results) == 1:
-        result = results[0]
-    elif len(results) > 1:
-        for key in results[0]:
-            data = [r[key] for r in results]
-            result[f"{key}_mean"] = np.mean(data)
-            result[f"{key}_std"] = np.std(data)
-    return result
+#     result = {}
+#     if len(results) == 1:
+#         result = results[0]
+#     elif len(results) > 1:
+#         for key in results[0]:
+#             data = [r[key] for r in results]
+#             result[f"{key}_mean"] = np.mean(data)
+#             result[f"{key}_std"] = np.std(data)
+#     return result
 
+import argparse
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type=str, default='dmis-lab/biobert-base-cased-v1.2', help='Model name') # microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract
+    args = parser.parse_args()
+    
+    short_model_name = args.model.split('/')[-1]
     # Example usage
     set_seed(42)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained("dmis-lab/biobert-base-cased-v1.2")
-    model = AutoModel.from_pretrained("dmis-lab/biobert-base-cased-v1.2")
+    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    model = AutoModel.from_pretrained(args.model)
     model = model.to(device)
 
     def get_bert_embeddings(text):
@@ -105,7 +133,10 @@ if __name__ == '__main__':
     train_data = pd.read_csv('../train_studies.csv')
     test_data = pd.read_csv('../test_studies.csv')
 
-    # ======================== Obtain Embeddings ========================
+    train_data = test_data[(test_data['year']<2022)]
+    test_data = test_data[(test_data['year']>=2022)]
+
+    # # ======================== Obtain Embeddings ========================
     # print('train')
     # train_data['combined_embeddings'] = train_data['features'].apply(get_bert_embeddings)
     # print('valid')
@@ -116,14 +147,14 @@ if __name__ == '__main__':
 
     # #save the embeddings
     # os.makedirs('data', exist_ok=True)
-    # train_data.to_pickle('data/pre_train_biobert_embeddings.pkl')
-    # valid_data.to_pickle('data/pre_valid_biobert_embeddings.pkl')
-    # test_data.to_pickle('data/pre_test_biobert_embeddings.pkl')
+    # train_data.to_pickle(f'data/{short_model_name}_train_embeddings.pkl')
+    # valid_data.to_pickle(f'data/{short_model_name}_valid_embeddings.pkl')
+    # test_data.to_pickle(f'data/{short_model_name}_test_embeddings.pkl')
 
     #read the embeddings
-    train_data = pd.read_pickle('data/pre_train_biobert_embeddings.pkl')
-    valid_data = pd.read_pickle('data/pre_valid_biobert_embeddings.pkl')
-    test_data = pd.read_pickle('data/pre_test_biobert_embeddings.pkl')
+    train_data = pd.read_pickle(f'data/{short_model_name}_train_embeddings.pkl')
+    valid_data = pd.read_pickle(f'data/{short_model_name}_valid_embeddings.pkl')
+    test_data = pd.read_pickle(f'data/{short_model_name}_test_embeddings.pkl')
 
     #drop duplicates
     train_data.drop_duplicates(subset='nct_id', inplace=True)
@@ -143,7 +174,7 @@ if __name__ == '__main__':
     #train on the train data and validate on the validation data per 2 epochs to get the best model 
     nn_model= NN(input_dim=X_train.shape[1], hidden_dim=128, output_dim=1).to(device)
     criterion = nn.BCELoss()
-    optimizer = torch.optim.Adam(nn_model.parameters(), lr=0.001)
+    optimizer = torch.optim.AdamW(nn_model.parameters(), lr=1e-4)
 
     X_train_tensor = X_train
     y_train_tensor = y_train.view(-1, 1)
@@ -157,7 +188,7 @@ if __name__ == '__main__':
     valid_dataset = TensorDataset(X_valid_tensor, y_valid_tensor)
     valid_loader = DataLoader(valid_dataset, batch_size=32, shuffle=False)
 
-    epochs = 50
+    epochs = 100
     best_valid_loss = float('inf')
     best_model = copy.deepcopy(nn_model)
 
@@ -219,18 +250,18 @@ if __name__ == '__main__':
     for phase in ['1', '2', '3']:
         test_df_subset = test_data[test_data['phase'].str.lower().str.contains(phase)]
 
-        print(phase)
-        f1 = f1_score(test_df_subset['label'], (test_df_subset['pred'] >= threshold).astype(int))
-        pr_auc = average_precision_score(test_df_subset['label'], test_df_subset['pred'])
-        roc_auc = roc_auc_score(test_df_subset['label'], test_df_subset['pred'])
-        print(f"F1: {f1}, PR-AUC: {pr_auc}, ROC-AUC: {roc_auc}")
+        # print(phase)
+        # f1 = f1_score(test_df_subset['label'], (test_df_subset['pred'] >= threshold).astype(int))
+        # pr_auc = average_precision_score(test_df_subset['label'], test_df_subset['pred'])
+        # roc_auc = roc_auc_score(test_df_subset['label'], test_df_subset['pred'])
+        # print(f"F1: {f1}, PR-AUC: {pr_auc}, ROC-AUC: {roc_auc}")
         
         # Bootstrap testing
         target = test_df_subset['label'].values
         preds = test_df_subset['pred'].values
         
-        bootstrap_results = bootstrap_testing(preds, target, threshold=threshold, bootstrap_num=20)
-        print("Bootstrapped Results:", bootstrap_results)
+        f1_mean, f1_std, ap_mean, ap_std, roc_mean, roc_std = bootstrap_testing(preds, target)
+        print(f"{phase}, {f1_mean:.3f}, {f1_std:.3f}, {ap_mean:.3f}, {ap_std:.3f}, {roc_mean:.3f}, {roc_std:.3f}")
 
-    #save the predictions as csv
-    #test_data.to_csv('data/CTOD_2014_test_predictions.csv', index=False)
+    # save the predictions as csv
+    test_data.to_csv(f'data/{short_model_name}_test_predictions.csv', index=False)
