@@ -64,19 +64,21 @@ hr {background-color: #a8cbff; height: 1px; border: 0; margin: 2em 5em};
 <h2>Abstract</h2>
 <h3>Background</h3>
 <p>
-The global cost of drug discovery and development exceeds \$200 billion annually, with clinical trial outcomes playing a critical role in the regulatory approval of new drugs and impacting patient outcomes. Despite their significance, large-scale, high-quality clinical trial outcome data are not readily available to the public, limiting advances in trial outcome predictive modeling.
+The global cost of drug discovery and development exceeds $200 billion annually, with clinical trial outcomes playing a critical role in the regulatory approval of new drugs and impacting patient outcomes. Despite their significance, large-scale, high-quality clinical trial outcome data are not readily available to the public, limiting advances in trial outcome predictive modeling.
 </p>
 <h3>Methods</h3>
 <p>
-  We introduce the Clinical Trial Outcome (CTO) dataset, a fully reproducible, large-scale (around 125K drug and biologics trials), open-source dataset of clinical trial outcomes derived from a comprehensive knowledge base. This knowledge base integrates weakly supervised labels from multiple sources, including large language model (LLM) interpretations of publications, trial phase transitions, sentiment analysis from news, stock prices of trial sponsors, and other trial-related metrics.
+We introduce the Clinical Trial Outcome (CTO) knowledge base, a fully reproducible, large-scale (around 125K drug and biologics trials), open-source of clinical trial information including large language model (LLM) interpretations of publications, matched trials over phases, sentiment analysis from news, stock prices of trial sponsors, and other trial-related metrics. 
+From this knowledge base, we additionally performed manual annotation of a set of recent clinical trials from 2020-2024.
 </p>
 <h3>Results</h3>
 <p>
-  Using our labeling pipeline, we generated high-quality trial outcome labels that demonstrate strong agreement with human annotations, achieving an F1 score of 94 for Phase 3 trials and 91 across all phases. Additionally, we provide monthly dataset updates reflecting the latest trial information, along with open-source code and a manually curated test set of 11,012 trials completed between 2020 and 2024.
+We evaluated the quality of our knowledge base by generating high-quality trial outcome labels that demonstrate strong agreement with previously published expert annotations, achieving an F1 score of 94 for Phase 3 trials and 91 across all phases.
+Additionally, we benchmarked a suite of standard machine learning models on our manually annotated set, highlighting the distribution shift of recent trials and the need for continuously updated labeling methods.
 </p>
 <h3>Conclusions</h3>
 <p>
-  CTO provides an unprecedented resource for clinical research, designed to enhance the reproducibility and precision of predictive models in drug development. This publicly available dataset will support ongoing research in clinical trial outcomes, offering insights that could optimize the drug development process.
+ By analyzing CTO's performance on recent trials, we showed a need for recent, high-quality trial outcome labels. We release our knowledge base and labels to the public at https://chufangao.github.io/CTOD, which will also be continuously updated to support ongoing research in clinical trial outcomes, offering insights that could optimize the drug development process.
 </p>
 
 <h2 id="data-viewer">Dataset Viewer</h2>
