@@ -33,7 +33,7 @@ if __name__ == '__main__':
     driver = webdriver.Firefox(options=chrome_options)
 
     amendment_counts = []
-    for i, nct in enumerate(tqdm(studies['nct_id'])):
+    for i, nct in enumerate(tqdm(studies['nct_id'].iloc[59525:])):
         try:
             driver.get(f'https://clinicaltrials.gov/study/{nct}?tab=history')
             # driver.page_source # needs to be called before the next line
