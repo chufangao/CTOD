@@ -2,7 +2,6 @@ beautifulsoup4
 feedparser
 icd10_cm
 matplotlib
-newspaper
 numpy
 pandas
 pymongo
