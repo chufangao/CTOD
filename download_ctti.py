@@ -4,49 +4,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
-import time
+import urllib.request
 import os
 
-import argparse
-import zipfile
-
-
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Download CTTI data')
-    
-    # savepath
-    parser.add_argument('--save_path', type=str, default='', help='path to save the data')
-    
-    args = parser.parse_args()
-    # Desired download path
-    download_path = os.path.join(args.save_path, 'CTTI_raw')
-    
-    new_path = os.path.join(args.save_path, 'CTTI_new')
-    old_path = os.path.join(args.save_path, 'CTTI_old')
-    
-    if not os.path.exists(download_path):
-        os.makedirs(download_path)
-    if not os.path.exists(new_path):
-        os.makedirs(new_path)
-    if not os.path.exists(old_path):
-        os.makedirs(old_path)
-        
-    # if CTTI_new is not empty, move all files to CTTI_old folder
-    if os.listdir(new_path):
-        print("Moving files from CTTI_new to CTTI_old")
-        for file in os.listdir(new_path):
-            os.rename(os.path.join(new_path, file), os.path.join(old_path, file))
-    
-    # delete any files in the CTTI_new folder
-    for file in os.listdir(new_path):
-        print(f"Deleting {file}")
-        os.remove(os.path.join(new_path, file))
-    
-    # delete any files in the download folder
-    for file in os.listdir(download_path):
-        print(f"Deleting old {file}")
-        os.remove(os.path.join(download_path, file))
+    download_path = "./downloads"
+    os.makedirs(download_path, exist_ok=True)
 
     # Set Chrome options to configure headless mode and download path
     chrome_options = Options()
@@ -64,6 +27,22 @@ if __name__ == "__main__":
     # Go to the website
     driver.get('https://aact.ctti-clinicaltrials.org/pipe_files')
 
+    # Wait for the select element to be present
+    dropdown = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "form-select"))
+    )
+
+    # # Find all option elements within the select element
+    # options = dropdown.find_elements(By.TAG_NAME, "option")
+
+    # # Select the second option (index 1, as the first is "Select file to download")
+    # if len(options) > 1:
+    #     first_file_option = options[1]
+    #     requests.get(first_file_option.get_attribute('value'))
+    # else:
+    #     print("No files available in the dropdown to select.")
+
+
     # Wait until the dropdown is populated (wait up to 20 seconds)
     wait = WebDriverWait(driver, 20)
     dropdown = wait.until(EC.presence_of_element_located((By.XPATH, '//select[@class="form-select"]')))
@@ -74,27 +53,8 @@ if __name__ == "__main__":
     # Select the first option
     select.select_by_index(1)
 
-    # Wait for the file to download (adjust as needed)
-    # check if .crdownload file is still being downloaded
-    time.sleep(10)
-    start = time.time()
-    while any(fname.endswith('.crdownload') for fname in os.listdir(download_path)):
-        time.sleep(10)
-        if time.time() - start > 600:
-            print("File download timed out")
-            break
+    url = Select(dropdown).options[1].get_attribute('value')
+    print("Downloading url:", url)
 
-    # Close the driver
-    driver.quit()
-
-    print(f"File downloaded to: {download_path}")
-    
-    #get the name of the downloaded file
-    file_name = os.listdir(download_path)[0]
-    
-    with zipfile.ZipFile(os.path.join(download_path, file_name), 'r') as zip_ref:
-        zip_ref.extractall(new_path)
-    
-    print(f"File extracted to: {new_path}")
-    
-    
+    urllib.request.urlretrieve(url, filename=os.path.join(download_path, "CTTI_new.zip"))
+    print("Saved to", os.path.join(download_path, "CTTI_new.zip"))
