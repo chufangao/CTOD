@@ -4,9 +4,9 @@
 
 Code for CTO: A Large Clinical Trial Outcome 
 
-[Paper Link: Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development](https://arxiv.org/abs/2406.10292)
+[Paper Link (Arxiv): Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development](https://arxiv.org/abs/2406.10292)
 
-[Dataset Link](https://zenodo.org/doi/10.5281/zenodo.11535960)
+[Dataset Link (Huggingface 🤗)](https://huggingface.co/datasets/chufangao/CTO)
 
 Please see [Tutorials](https://github.com/chufangao/CTOD/tree/main/tutorials) if you want to simply get started as soon as possible.
 
