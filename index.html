@@ -1,113 +1,175 @@
-
 <!DOCTYPE html>
-<html>
-
-<style>
-body {
-  font-family: sans-serif;
-  font-weight: 400;
-  color: #333;
-}
-
-#wrapper {
-  margin: 3em auto;
-  max-width: 840px;
-}
-
-h1 {font-size: 180%; font-weight:bold; color:#FF5F0F; text-align:center;}
-h2 {font-size: 112%; font-weight:bold; color:#FF5F0F; margin-top:1.5em}
-h3 {font-size: 100%; font-weight:bold; color:#000000; margin-top:1.5em}
-p,li {line-height: 1.5;}
-p.centerize {text-align: center;}
-blockquote {border-left: 5px solid #CCC; padding-left: 20px; margin-left: 0;}
-
-li {margin:6px}
-ul {list-style: square}
-
-.latest {font-weight:bold; color:#FF5F0F}
-
-a.button {border: 1px solid #3A4461; border-radius: 10px; padding: 0.8em; background-color: #a8cbff; color: #3A4461; margin: 0 1em; font-weight: bold;}
-/* underline on hover */
-a.button:hover {text-decoration: underline;}
-
-hr {background-color: #a8cbff; height: 1px; border: 0; margin: 2em 5em};
-</style>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Automatically Labeling $200B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark</title>
+  <title>Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development</title>
+  <style>
+    /* Remove or minimize custom styles as Bootstrap will handle most of the styling */
+    body {
+      font-family: sans-serif;
+      color: #333;
+      padding-top: 70px; /* Add padding to body to account for fixed navbar height */
+    }
+
+    html {
+      scroll-padding-top: 70px; /* Account for fixed navbar height during smooth scroll */
+    }
+
+    #wrapper {
+      margin: 3em auto;
+      max-width: 1000px;
+    }
+
+    h1 {
+      font-weight: bold;
+      color: #FF5F0F;
+      text-align: center;
+    }
+
+    h2 {
+      font-weight: bold;
+      color: #FF5F0F;
+    }
+
+    blockquote {
+      border-left: 5px solid #CCC;
+      padding-left: 20px;
+      margin-left: 0;
+    }
+
+    li {
+      margin: 6px;
+    }
+
+    ul {
+      list-style: square;
+    }
+
+    .latest {
+      font-weight: bold;
+      color: #FF5F0F;
+    }
+  </style>
 </head>
 
 <body>
-<div id=wrapper>
-<h1>Automatically Labeling $200B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark</h1>
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+          aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav" id="header-links">
+          <li><a href="#abstract">Abstract</a></li>
+          <li><a href="#data-viewer">Raw Dataset Viewer</a></li>
+          <li><a href="#usage-instructions">Usage Instructions</a></li>
+          <li><a href="#citation">Citation</a></li>
+          <li><a href="#other-material">Other Material and Related Work</a></li>
+          <li><a href="#license">License</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-<!-- <div style="width:70%;margin:0 auto">
-  <img src="task.png" style="width:100%"
-    title="Task: Learn to produce an answer y to a given question x according to a given table t">
-</div> -->
+  <div class="container" id="wrapper">
+    <h1 class="text-center">Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development</h1>
+    <p class="text-muted text-center">Chufan Gao, Jathurshan Pradeepkumar, Trisha Das, Shivashankar Thati, Jimeng Sun</p>
+    <p class="text-muted text-center">University of Illinois Urbana-Champaign</p>
 
-<div style="margin:2em 0">
-  <p class=centerize>
-    <a href="https://huggingface.co/datasets/chufangao/CTO" class=button>Download Dataset</a>
-    <a href="https://github.com/chufangao/ctod" class=button>Code</a>
-    <a href="https://arxiv.org/abs/2406.10292" class=button>Paper</a>
-  </p>
-</div>
-<p><em>Note: The paper is from a previous version and will be updated as soon as possible to reflect the changes we have made.</em></p>
-<hr>
+    <div style="margin:2em 0" class="text-center">
+      <p>
+        <a href="https://huggingface.co/datasets/chufangao/CTO" class="btn btn-primary button">Download Dataset</a>
+        <a href="https://github.com/chufangao/ctod" class="btn btn-primary button">Code</a>
+        <a href="https://arxiv.org/abs/2406.10292" class="btn btn-primary button">Paper</a>
+      </p>
+    </div>
+    <!-- <p class="text-muted"><em>Note: The paper is from a previous version and will be updated as soon as possible to reflect the changes we have made.</em></p> -->
+    <hr>
 
-<h2>Abstract</h2>
-<h3>Background</h3>
-<p>
-The global cost of drug discovery and development exceeds $200 billion annually, with clinical trial outcomes playing a critical role in the regulatory approval of new drugs and impacting patient outcomes. Despite their significance, large-scale, high-quality clinical trial outcome data are not readily available to the public, limiting advances in trial outcome predictive modeling.
-</p>
-<h3>Methods</h3>
-<p>
-We introduce the Clinical Trial Outcome (CTO) knowledge base, a fully reproducible, large-scale (around 125K drug and biologics trials), open-source of clinical trial information including large language model (LLM) interpretations of publications, matched trials over phases, sentiment analysis from news, stock prices of trial sponsors, and other trial-related metrics. 
-From this knowledge base, we additionally performed manual annotation of a set of recent clinical trials from 2020-2024.
-</p>
-<h3>Results</h3>
-<p>
-We evaluated the quality of our knowledge base by generating high-quality trial outcome labels that demonstrate strong agreement with previously published expert annotations, achieving an F1 score of 94 for Phase 3 trials and 91 across all phases.
-Additionally, we benchmarked a suite of standard machine learning models on our manually annotated set, highlighting the distribution shift of recent trials and the need for continuously updated labeling methods.
-</p>
-<h3>Conclusions</h3>
-<p>
- By analyzing CTO's performance on recent trials, we showed a need for recent, high-quality trial outcome labels. We release our knowledge base and labels to the public at https://chufangao.github.io/CTOD, which will also be continuously updated to support ongoing research in clinical trial outcomes, offering insights that could optimize the drug development process.
-</p>
+    <h2 id="abstract">Abstract</h2>
+    <p><strong>Background</strong> The cost of drug discovery and development is substantial, with clinical trial outcomes playing a critical role in regulatory approval and patient care. However, access to large-scale, high-quality clinical trial outcome data remains limited, hindering advancements in predictive modeling and evidence-based decision-making.</p>
 
-<h2 id="data-viewer">Dataset Viewer</h2>
-<iframe
-  src="https://huggingface.co/datasets/chufangao/CTO/embed/viewer/human_labels/test"
-  frameborder="0"
-  width="100%"
-  height="560px"
-></iframe>
+    <p><strong>Methods</strong> We present the Clinical Trial Outcome (CTO) benchmark, a fully reproducible, large-scale repository encompassing approximately 125,000 drug and biologics trials. CTO integrates large language model (LLM) interpretations of publications, trial phase progression tracking, sentiment analysis from news sources, stock price movements of trial sponsors, and additional trial-related metrics. Furthermore, we manually annotated a dataset of clinical trials conducted between 2020 and 2024 to enhance the quality and reliability of outcome labels.</p>
+    
+    <p><strong>Results</strong>&nbsp;
+    The trial outcome labels in the CTO benchmark agree strongly with expert annotations, achieving an F1 score of 94 for Phase 3 trials and 91 across all phases. Additionally, benchmarking standard machine learning models on our manually annotated dataset revealed distribution shifts in recent trials, underscoring the necessity of continuously updated labeling approaches.</p>
+    
+    <p><strong>Conclusions</strong> By analyzing CTO’s performance on recent clinical trials, we demonstrate the ongoing need for high-quality, up-to-date trial outcome labels. We publicly release the CTO knowledge base and annotated labels at <a href="https://chufangao.github.io/CTOD">https://chufangao.github.io/CTOD</a>, with regular updates to support research on clinical trial outcomes and inform data-driven improvements in drug development.</p>
 
-<h2 id="usage-notes">Usage Instructions</h2>
-<ul>
-  <li><strong>The latest version will always be shown in the huggingface first.</strong></li>
-  <li>Please see <a href="https://github.com/chufangao/CTOD/tree/main/tutorials">Tutorials</a> for examples on how to quickly get started with this dataset.</li>  
-</ul>
+    <h2 id="data-viewer">Raw Dataset Viewer</h2>
+    <p><b>Below is a preview of the full, raw, dataset. The full dataset + descriptions can be accessed <a href="https://huggingface.co/datasets/chufangao/CTO">here</a>.</b></p>
+    <iframe src="https://huggingface.co/datasets/chufangao/CTO/embed/viewer/human_labels/test" frameborder="0" width="100%"
+      height="560px"></iframe>
 
-<h2>Citation</h2>
-<blockquote>
-  <p>
-    Gao, C., Pradeepkumar, J., Das, T., Thati, S., & Sun, J. (2024). Automatically Labeling $200 B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark. arXiv preprint arXiv:2406.10292.
-  </p>
-</blockquote>
+    <h3>Example Views</h3>
+    <ul>
+      <li> View human labels' study dates and overall status
+<pre>SELECT 
+  nct_id, 
+  study_first_submitted_date, 
+  study_first_posted_date, 
+  completion_date, 
+  overall_status, 
+  labels
+FROM 
+  human_labels</pre>
+        <iframe src="https://huggingface.co/datasets/chufangao/CTO/embed/sql-console/epU7yTZ" frameborder="0" width="100%" height="280px"></iframe>
+      </li>
+      <li> Get interesting positive CTO predictions. I.e. Phase 3 trials with less than 100% predicted probability of success
+<pre>SELECT *
+  FROM phase3_cto_preds
+  WHERE pred_proba != 1
+  ORDER BY pred_proba DESC
+  LIMIT 10</pre>
+  <iframe src="https://huggingface.co/datasets/chufangao/CTO/embed/sql-console/dMo9vS5" frameborder="0" width="100%" height="280px"></iframe>
+            We see that these trials are likely to succeed given that each trial had a positive effect on stock price and were able to be linked to a previous trial, despite there not being an explicit p-value.
+        </li>
+    </ul>
 
-<h2>Other Material and Related Work</h2>
-<ul>
-  <li><a href=https://www.linkedin.com/posts/jimengsun_automatically-labeling-200b-life-saving-activity-7221928418169212931-bFq-/ >LinkedIn Post by Professor Jimeng Sun</a></li>
-  <li><a href=https://aiscientist.substack.com/p/musing-53-automatically-labeling>External Blog Post: Musing 53: Automatically Labeling $200B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark</a></li>
-</ul>
+    <h2 id="usage-instructions">Usage Instructions</h2>
+    <ul>
+      <li><strong>The latest version will always be shown in <a href="https://huggingface.co/datasets/chufangao/CTO">Huggingface</a>. Instructions in obtaining the full dataset is shown there as well.</strong></li>
+      <li>You can also load specific files using the Python <a href="https://pandas.pydata.org/docs/index.html">Pandas library</a>
+<pre>import pandas as pd
+CTO_phase1_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase1_CTO_rf.csv")
+CTO_phase2_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase2_CTO_rf.csv")
+CTO_phase3_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase3_CTO_rf.csv")</pre>
+      </li>
+      <li>Please see <a href="https://github.com/chufangao/CTOD/tree/main/tutorials">Tutorials</a> for examples getting started with this dataset. This includes off-the-shelf Google Collab notebooks!</li>
+    </ul>
 
-<h2>License</h2>
-<p>The dataset is licensed under the <a href="https://github.com/chufangao/CTOD/blob/main/LICENSE">MIT</a> license.</p>
+    <h2 id="citation">Citation</h2>
+    <blockquote>
+      <pre>@article{gao2024automatically,
+  title={Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development},
+  author={Gao, Chufan and Pradeepkumar, Jathurshan and Das, Trisha and Thati, Shivashankar and Sun, Jimeng},
+  journal={arXiv preprint arXiv:2406.10292},
+  year={2024}
+}</pre>
+    </blockquote>
 
-</div>
+    <h2 id="other-material">Other Material and Related Work</h2>
+    <ul>
+      <li><a href=https://www.linkedin.com/posts/jimengsun_automatically-labeling-200b-life-saving-activity-7221928418169212931-bFq-/>LinkedIn Post by Professor Jimeng Sun</a></li>
+      <li><a href=https://aiscientist.substack.com/p/musing-53-automatically-labeling>External Blog Post: Musing 53: Automatically Labeling $200B Life-Saving Datasets: A Large Clinical Trial Outcome Benchmark</a></li>
+    </ul>
+
+    <h2 id="license">License</h2>
+    <p>The dataset is licensed under the <a href="https://github.com/chufangao/CTOD/blob/main/LICENSE">MIT</a> license.</p>
+
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
 
 </html>
