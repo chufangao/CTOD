@@ -2,7 +2,7 @@
 
 # CTO
 
-Code for CTO: A Large Clinical Trial Outcome 
+Code for Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development
 
 [Paper Link (Arxiv): Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development](https://arxiv.org/abs/2406.10292)
 
