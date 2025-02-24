@@ -4,6 +4,8 @@
 
 Code for Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development
 
+[Website: chufangao.github.io/CTOD](https://chufangao.github.io/CTOD/)
+
 [Paper Link (Arxiv): Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchmark for Drug Development](https://arxiv.org/abs/2406.10292)
 
 [![Dataset Link](https://huggingface.co/datasets/huggingface/badges/resolve/main/dataset-on-hf-md.svg)](https://huggingface.co/datasets/chufangao/CTO)
