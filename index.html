@@ -71,7 +71,7 @@
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav" id="header-links">
           <li><a href="#abstract">Abstract</a></li>
-          <li><a href="#data-viewer">Raw Dataset Viewer</a></li>
+          <li><a href="#data-viewer">Dataset Viewer</a></li>
           <li><a href="#usage-instructions">Usage Instructions</a></li>
           <li><a href="#citation">Citation</a></li>
           <li><a href="#other-material">Other Material and Related Work</a></li>
@@ -91,6 +91,7 @@
         <a href="https://huggingface.co/datasets/chufangao/CTO" class="btn btn-primary button">Download Dataset</a>
         <a href="https://github.com/chufangao/ctod" class="btn btn-primary button">Code</a>
         <a href="https://arxiv.org/abs/2406.10292" class="btn btn-primary button">Paper</a>
+        <a href="https://github.com/chufangao/CTOD/tree/main/tutorials" class="btn btn-primary button">Collab Notebooks</a>
       </p>
     </div>
     <!-- <p class="text-muted"><em>Note: The paper is from a previous version and will be updated as soon as possible to reflect the changes we have made.</em></p> -->
@@ -106,11 +107,7 @@
     
     <p><strong>Conclusions</strong> By analyzing CTO’s performance on recent clinical trials, we demonstrate the ongoing need for high-quality, up-to-date trial outcome labels. We publicly release the CTO knowledge base and annotated labels at <a href="https://chufangao.github.io/CTOD">https://chufangao.github.io/CTOD</a>, with regular updates to support research on clinical trial outcomes and inform data-driven improvements in drug development.</p>
 
-    <h2 id="data-viewer">Raw Dataset Viewer</h2>
-    <p><b>Below is a preview of the full, raw, dataset. The full dataset + descriptions can be accessed <a href="https://huggingface.co/datasets/chufangao/CTO">here</a>.</b></p>
-    <iframe src="https://huggingface.co/datasets/chufangao/CTO/embed/viewer/human_labels/test" frameborder="0" width="100%"
-      height="560px"></iframe>
-
+    <h2 id="data-viewer">Dataset Viewer</h2>
     <h3>Example Views</h3>
     <ul>
       <li> View human labels' study dates and overall status
@@ -135,6 +132,10 @@ FROM
             We see that these trials are likely to succeed given that each trial had a positive effect on stock price and were able to be linked to a previous trial, despite there not being an explicit p-value.
         </li>
     </ul>
+    <p><b>Below is a preview of the full, raw, dataset. The full dataset + descriptions can be accessed <a href="https://huggingface.co/datasets/chufangao/CTO">here</a>.</b></p>
+    <iframe src="https://huggingface.co/datasets/chufangao/CTO/embed/viewer/human_labels/test" frameborder="0" width="100%"
+      height="560px"></iframe>
+
 
     <h2 id="usage-instructions">Usage Instructions</h2>
     <ul>
