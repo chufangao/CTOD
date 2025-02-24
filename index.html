@@ -71,8 +71,8 @@
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav" id="header-links">
           <li><a href="#abstract">Abstract</a></li>
-          <li><a href="#data-viewer">Dataset Viewer</a></li>
           <li><a href="#usage-instructions">Usage Instructions</a></li>
+          <li><a href="#data-viewer">Dataset Viewer</a></li>
           <li><a href="#citation">Citation</a></li>
           <li><a href="#other-material">Other Material and Related Work</a></li>
           <li><a href="#license">License</a></li>
@@ -107,6 +107,18 @@
     
     <p><strong>Conclusions</strong> By analyzing CTO’s performance on recent clinical trials, we demonstrate the ongoing need for high-quality, up-to-date trial outcome labels. We publicly release the CTO knowledge base and annotated labels at <a href="https://chufangao.github.io/CTOD">https://chufangao.github.io/CTOD</a>, with regular updates to support research on clinical trial outcomes and inform data-driven improvements in drug development.</p>
 
+    <h2 id="usage-instructions">Usage Instructions</h2>
+    <ul>
+      <li>The latest version will always be shown in <a href="https://huggingface.co/datasets/chufangao/CTO">Huggingface</a>. Instructions in obtaining the full dataset is shown there as well.</li>
+      <li>You can also load specific files using the Python <a href="https://pandas.pydata.org/docs/index.html">Pandas library</a>
+<pre>import pandas as pd
+CTO_phase1_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase1_CTO_rf.csv")
+CTO_phase2_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase2_CTO_rf.csv")
+CTO_phase3_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase3_CTO_rf.csv")</pre>
+      </li>
+      <li><strong>Please see <a href="https://github.com/chufangao/CTOD/tree/main/tutorials">Tutorials</a> for examples getting started with this dataset. This includes off-the-shelf Google Collab notebooks!</strong></li>
+    </ul>
+
     <h2 id="data-viewer">Dataset Viewer</h2>
     <h3>Example Views</h3>
     <ul>
@@ -137,17 +149,6 @@ FROM
       height="560px"></iframe>
 
 
-    <h2 id="usage-instructions">Usage Instructions</h2>
-    <ul>
-      <li><strong>The latest version will always be shown in <a href="https://huggingface.co/datasets/chufangao/CTO">Huggingface</a>. Instructions in obtaining the full dataset is shown there as well.</strong></li>
-      <li>You can also load specific files using the Python <a href="https://pandas.pydata.org/docs/index.html">Pandas library</a>
-<pre>import pandas as pd
-CTO_phase1_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase1_CTO_rf.csv")
-CTO_phase2_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase2_CTO_rf.csv")
-CTO_phase3_preds = pd.read_csv("https://huggingface.co/datasets/chufangao/CTO/raw/main/phase3_CTO_rf.csv")</pre>
-      </li>
-      <li>Please see <a href="https://github.com/chufangao/CTOD/tree/main/tutorials">Tutorials</a> for examples getting started with this dataset. This includes off-the-shelf Google Collab notebooks!</li>
-    </ul>
 
     <h2 id="citation">Citation</h2>
     <blockquote>
