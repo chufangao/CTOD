@@ -48,4 +48,4 @@ This repository provides implementations for various sources of weakly supervise
 
 ### Special Thanks
 
-A huge thanks to [SerpApi](https://serpapi.com/) for their powerful API--an invaluable resource for scalably gathering clinical trial news, making our research faster and more efficient.
+A huge thanks to [SerpApi](https://serpapi.com/) for their powerful search API--an invaluable resource for scalably gathering clinical trial news, making our research faster and more efficient.
