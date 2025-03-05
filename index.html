@@ -106,8 +106,12 @@
     <p><strong>Results</strong>&nbsp;
     The trial outcome labels in the CTO benchmark agree strongly with expert annotations, achieving an F1 score of 94 for Phase 3 trials and 91 across all phases. Additionally, benchmarking standard machine learning models on our manually annotated dataset revealed distribution shifts in recent trials, underscoring the necessity of continuously updated labeling approaches.</p>
     
-    <p><strong>Conclusions</strong> By analyzing CTO’s performance on recent clinical trials, we demonstrate the ongoing need for high-quality, up-to-date trial outcome labels. We publicly release the CTO knowledge base and annotated labels at <a href="https://chufangao.github.io/CTOD">https://chufangao.github.io/CTOD</a>, with regular updates to support research on clinical trial outcomes and inform data-driven improvements in drug development.</p>
+    <p><strong>Conclusions</strong> By analyzing CTO's performance on recent clinical trials, we demonstrate the ongoing need for high-quality, up-to-date trial outcome labels. We publicly release the CTO knowledge base and annotated labels at <a href="https://chufangao.github.io/CTOD">https://chufangao.github.io/CTOD</a>, with regular updates to support research on clinical trial outcomes and inform data-driven improvements in drug development.</p>
 
+    <h3>Definition: Trial Success</h3> Clinical trial outcomes are multifaceted and have diverse implications. These outcomes can involve meeting the primary endpoint as defined in the study, advancing to the next phase of the trial, obtaining regulatory approval, impacting the financial outcome for the sponsor (either positively or negatively), and influencing patient outcomes such as adverse events and trial dropouts.
+    <br><br>
+    <b>Our paper defines the trial outcome as a binary indicator (0 for Failure and 1 for Success)</b>, inidcating whether the trial achieves its primary endpoints and can progress to the next stage of drug development. For example, for Phase 1 and 2 trials, success may mean moving to the next phase, such as from Phase 1 to Phase 2, and from Phase 2 to Phase 3. In Phase 3, success is measured by regulatory approval. 
+    
     <h2 id="data-viewer">Dataset Viewer</h2>
     <h3>Example Views</h3>
     <ul>
