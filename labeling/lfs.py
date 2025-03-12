@@ -78,7 +78,7 @@ def lf_pvalues(path): # any p-value sig is good
 
     df['lf'] = df['p_value'] < .05 
     df = df.groupby('nct_id')[['lf', 'p_value']].mean().reset_index() # multiple pvalues per nct_id
-    df['lf'] = df['p_value'] > 0 # any p-value sig is good
+    df['lf'] = df['lf'] > 0 # any p-value sig is good
     df['lf'] = df['lf'].fillna(-1).astype('int')
     df = reorder_columns(df, ['nct_id', 'lf'])
     return df
