@@ -1,3 +1,24 @@
+"""
+Label Arrangement Script
+
+This script organizes and copies generated labels from different CTOD modules 
+into a centralized outcome_labels directory for easy access and analysis.
+
+The script consolidates:
+- GPT-based predictions from LLM module
+- Trial linkage outcomes from clinical trial linkage module
+- Other weak supervision labels
+
+Usage:
+    python arrange_labels.py --save_path <SAVE_PATH>
+
+Args:
+    --save_path: Base directory containing module outputs
+
+Output:
+    Creates outcome_labels/ directory with consolidated label files
+"""
+
 import argparse
 import os
 

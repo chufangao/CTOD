@@ -11,6 +11,19 @@ from sentence_transformers import util
 
 
 def drug_biologics_nct_ids(intervention_path):
+    """
+    Extract NCT IDs for trials involving drug or biological interventions.
+    
+    Args:
+        intervention_path (str): Path to CTTI interventions.txt file
+        
+    Returns:
+        list: List of NCT IDs for drug and biological intervention trials
+        
+    Note:
+        Filters interventions to include only 'drug' and 'biological' types,
+        excluding device, behavioral, and other intervention types.
+    """
     df = pd.read_csv(intervention_path, sep='|')
     df = df[['nct_id','intervention_type']]
     type_list = ['drug','biological']

@@ -22,6 +22,18 @@ def reorder_columns(df, cols_in_front):
     return df[columns]
 
 def lf_results_reported(path):
+    """
+    Labeling function based on whether trial results were reported.
+    
+    Args:
+        path (str): Path to CTTI data directory containing calculated_values.txt
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label (1 if results reported, 0 otherwise)
+        
+    Note:
+        Uses 'were_results_reported' field from CTTI calculated_values.txt
+    """
     df = pd.read_csv(path + 'calculated_values.txt', sep='|', low_memory=False)
     df.dropna(subset=['were_results_reported'], inplace=True)
     df['lf'] = df['were_results_reported'] == 't'
@@ -30,6 +42,19 @@ def lf_results_reported(path):
     return df
 
 def lf_num_sponsors(path, quantile=.5):
+    """
+    Labeling function based on number of sponsors (hypothesis: more sponsors = higher success).
+    
+    Args:
+        path (str): Path to CTTI data directory containing sponsors.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on sponsor count
+        
+    Note:
+        Trials with sponsor count above the specified quantile are labeled as positive
+    """
     df = pd.read_csv(path + 'sponsors.txt', sep='|',low_memory=False)
     df.dropna(subset=['name'], inplace=True)
     df = df.groupby('nct_id')['name'].count().reset_index()
@@ -39,6 +64,20 @@ def lf_num_sponsors(path, quantile=.5):
     return df
 
 def lf_num_patients(path, quantile=.5):
+    """
+    Labeling function based on number of patients enrolled in the trial.
+    
+    Args:
+        path (str): Path to CTTI data directory containing outcome_counts.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on patient count
+        
+    Note:
+        Trials with patient count above the specified quantile are labeled as positive.
+        Assumes larger trials have higher success probability.
+    """
     df = pd.read_csv(path + 'outcome_counts.txt', sep='|', low_memory=False)    
     df.dropna(subset=['count'], inplace=True)
     df = df.groupby('nct_id').sum().reset_index() # pd df (NCTID, values, num_patients)

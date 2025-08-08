@@ -1,3 +1,22 @@
+"""
+CTTI Data Download Script
+
+This script automatically downloads the latest Clinical Trials Transformation Initiative (CTTI) 
+dataset from the official website using Selenium WebDriver. The data is essential for 
+clinical trial outcome prediction research.
+
+Requirements:
+    - Chrome browser installed
+    - selenium package installed
+    - Sufficient disk space (>10GB recommended)
+
+Usage:
+    python download_ctti.py
+
+Output:
+    Downloads CTTI_new.zip to ./downloads/ directory
+"""
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
