@@ -27,6 +27,18 @@ import urllib.request
 import os
 
 if __name__ == "__main__":
+    """
+    Main execution function for CTTI data download.
+    
+    This function:
+    1. Sets up Chrome WebDriver in headless mode
+    2. Navigates to CTTI pipe files download page
+    3. Selects the latest available dataset
+    4. Downloads the ZIP file to ./downloads/ directory
+    
+    The download typically contains ~500MB of pipe-delimited clinical trial data
+    covering all trials from ClinicalTrials.gov database.
+    """
     download_path = "./downloads"
     os.makedirs(download_path, exist_ok=True)
 

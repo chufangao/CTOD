@@ -25,6 +25,16 @@ import os
 
 
 if __name__ == '__main__':
+    """
+    Main execution function for label arrangement.
+    
+    This script consolidates label outputs from different CTOD modules:
+    1. Copies GPT-based predictions from LLM module
+    2. Copies trial linkage outcomes from clinical trial linkage module
+    3. Organizes all labels in a centralized outcome_labels/ directory
+    
+    The organized labels can then be used for model training and evaluation.
+    """
     parser = argparse.ArgumentParser(description='Arrange labels for CTOD dataset')
     parser.add_argument('--save_path', type=str, help='Path to the folder to save the arranged labels')
 

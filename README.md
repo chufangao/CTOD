@@ -25,6 +25,7 @@ Code for **Automatically Labeling Clinical Trial Outcomes: A Large-Scale Benchma
 - [📖 Modules](#-modules)
 - [💻 Usage Examples](#-usage-examples)
 - [🔧 Development](#-development)
+- [📚 Documentation](#-documentation)
 - [📊 Citation](#-citation)
 - [👥 Authors](#-authors)
 - [🙏 Acknowledgments](#-acknowledgments)
@@ -264,7 +265,17 @@ Store these in a `.env` file:
 NCBI_API_KEY=your_ncbi_key
 OPENAI_API_KEY=your_openai_key
 SERPAPI_KEY=your_serpapi_key
-``` 
+```
+
+## 📚 Documentation
+
+For comprehensive documentation, visit our **[docs directory](./docs/)**:
+
+- **[📦 Installation Guide](./docs/INSTALLATION.md)** - Complete setup instructions
+- **[🔧 API Reference](./docs/API.md)** - Function and class documentation
+- **[🏗️ Architecture Overview](./docs/ARCHITECTURE.md)** - System design and components
+- **[📊 Data Documentation](./docs/DATA.md)** - Dataset descriptions and schemas
+- **[📋 Documentation Index](./docs/README.md)** - Navigate all documentation 
 
 ## 📊 Citation
 

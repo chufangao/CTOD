@@ -87,6 +87,20 @@ def lf_num_patients(path, quantile=.5):
     return df
 
 def lf_patient_drop(path, quantile=.5):
+    """
+    Labeling function based on patient dropout rate (hypothesis: lower dropout = higher success).
+    
+    Args:
+        path (str): Path to CTTI data directory containing drop_withdrawals.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on dropout rate
+        
+    Note:
+        Trials with dropout count below the specified quantile are labeled as positive.
+        Lower dropout rates often indicate better tolerated, more successful trials.
+    """
     # patient dropout
     df = pd.read_csv(os.path.join(path, 'drop_withdrawals.txt'), sep='|',low_memory=False)
     df.dropna(subset=['count'], inplace=True)
@@ -97,6 +111,20 @@ def lf_patient_drop(path, quantile=.5):
     return df
 
 def lf_sites(path, quantile=.5):
+    """
+    Labeling function based on number of trial sites (hypothesis: more sites = higher success).
+    
+    Args:
+        path (str): Path to CTTI data directory containing facilities.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on site count
+        
+    Note:
+        Trials with site count above the specified quantile are labeled as positive.
+        More sites often indicate larger, better-funded, more successful trials.
+    """
     # sites
     df = pd.read_csv(os.path.join(path, 'facilities.txt'), sep='|',low_memory=False)
     df.dropna(subset=['name'], inplace=True)
@@ -107,7 +135,21 @@ def lf_sites(path, quantile=.5):
     df = reorder_columns(df, ['nct_id', 'lf'])
     return df
 
-def lf_pvalues(path): # any p-value sig is good
+def lf_pvalues(path): 
+    """
+    Labeling function based on statistical significance of primary outcomes.
+    
+    Args:
+        path (str): Path to CTTI data directory containing outcome_analyses.txt and outcomes.txt
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on p-values
+        
+    Note:
+        Trials with any statistically significant primary outcome (p < 0.05) are labeled positive.
+        Only considers primary outcomes, not secondary endpoints.
+    """
+    # any p-value sig is good
     # pvalues
     df = pd.read_csv(os.path.join(path, 'outcome_analyses.txt'), sep='|', low_memory=False)
     outcomes_df = pd.read_csv(os.path.join(path, 'outcomes.txt'), sep='|')
