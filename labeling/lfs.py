@@ -22,6 +22,18 @@ def reorder_columns(df, cols_in_front):
     return df[columns]
 
 def lf_results_reported(path):
+    """
+    Labeling function based on whether trial results were reported.
+    
+    Args:
+        path (str): Path to CTTI data directory containing calculated_values.txt
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label (1 if results reported, 0 otherwise)
+        
+    Note:
+        Uses 'were_results_reported' field from CTTI calculated_values.txt
+    """
     df = pd.read_csv(path + 'calculated_values.txt', sep='|', low_memory=False)
     df.dropna(subset=['were_results_reported'], inplace=True)
     df['lf'] = df['were_results_reported'] == 't'
@@ -30,6 +42,19 @@ def lf_results_reported(path):
     return df
 
 def lf_num_sponsors(path, quantile=.5):
+    """
+    Labeling function based on number of sponsors (hypothesis: more sponsors = higher success).
+    
+    Args:
+        path (str): Path to CTTI data directory containing sponsors.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on sponsor count
+        
+    Note:
+        Trials with sponsor count above the specified quantile are labeled as positive
+    """
     df = pd.read_csv(path + 'sponsors.txt', sep='|',low_memory=False)
     df.dropna(subset=['name'], inplace=True)
     df = df.groupby('nct_id')['name'].count().reset_index()
@@ -39,6 +64,20 @@ def lf_num_sponsors(path, quantile=.5):
     return df
 
 def lf_num_patients(path, quantile=.5):
+    """
+    Labeling function based on number of patients enrolled in the trial.
+    
+    Args:
+        path (str): Path to CTTI data directory containing outcome_counts.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on patient count
+        
+    Note:
+        Trials with patient count above the specified quantile are labeled as positive.
+        Assumes larger trials have higher success probability.
+    """
     df = pd.read_csv(path + 'outcome_counts.txt', sep='|', low_memory=False)    
     df.dropna(subset=['count'], inplace=True)
     df = df.groupby('nct_id').sum().reset_index() # pd df (NCTID, values, num_patients)
@@ -48,6 +87,20 @@ def lf_num_patients(path, quantile=.5):
     return df
 
 def lf_patient_drop(path, quantile=.5):
+    """
+    Labeling function based on patient dropout rate (hypothesis: lower dropout = higher success).
+    
+    Args:
+        path (str): Path to CTTI data directory containing drop_withdrawals.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on dropout rate
+        
+    Note:
+        Trials with dropout count below the specified quantile are labeled as positive.
+        Lower dropout rates often indicate better tolerated, more successful trials.
+    """
     # patient dropout
     df = pd.read_csv(os.path.join(path, 'drop_withdrawals.txt'), sep='|',low_memory=False)
     df.dropna(subset=['count'], inplace=True)
@@ -58,6 +111,20 @@ def lf_patient_drop(path, quantile=.5):
     return df
 
 def lf_sites(path, quantile=.5):
+    """
+    Labeling function based on number of trial sites (hypothesis: more sites = higher success).
+    
+    Args:
+        path (str): Path to CTTI data directory containing facilities.txt
+        quantile (float): Quantile threshold for determining positive labels (default: 0.5)
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on site count
+        
+    Note:
+        Trials with site count above the specified quantile are labeled as positive.
+        More sites often indicate larger, better-funded, more successful trials.
+    """
     # sites
     df = pd.read_csv(os.path.join(path, 'facilities.txt'), sep='|',low_memory=False)
     df.dropna(subset=['name'], inplace=True)
@@ -68,7 +135,21 @@ def lf_sites(path, quantile=.5):
     df = reorder_columns(df, ['nct_id', 'lf'])
     return df
 
-def lf_pvalues(path): # any p-value sig is good
+def lf_pvalues(path): 
+    """
+    Labeling function based on statistical significance of primary outcomes.
+    
+    Args:
+        path (str): Path to CTTI data directory containing outcome_analyses.txt and outcomes.txt
+        
+    Returns:
+        pd.DataFrame: DataFrame with nct_id and binary label based on p-values
+        
+    Note:
+        Trials with any statistically significant primary outcome (p < 0.05) are labeled positive.
+        Only considers primary outcomes, not secondary endpoints.
+    """
+    # any p-value sig is good
     # pvalues
     df = pd.read_csv(os.path.join(path, 'outcome_analyses.txt'), sep='|', low_memory=False)
     outcomes_df = pd.read_csv(os.path.join(path, 'outcomes.txt'), sep='|')
