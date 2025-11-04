@@ -1,0 +1,471 @@
+Ticker,name
+PFE,Pfizer
+ABT,Abbott
+LLY,Eli Lilly and Company
+BMY,Bristol-Myers Squibb
+CORT,Corcept Therapeutics
+ALDX,"Aldeyra Therapeutics, Inc."
+SNY,Sanofi
+NVO,Novo Nordisk A/S
+MMM,3M
+AGIO,"Agios Pharmaceuticals, Inc."
+OCUL,"Ocular Therapeutix, Inc."
+INM,InMed Pharmaceuticals Inc.
+ARQT,"Arcutis Biotherapeutics, Inc."
+AZN,AstraZeneca
+TPST,Tempest Therapeutics
+JNJ,Johnson & Johnson
+GILD,Gilead Sciences
+BSX,Boston Scientific Corporation
+MREO,Mereo BioPharma
+NVS,Novartis
+GE,General Electric
+ANNX,"Annexon, Inc."
+VSTM,"Verastem, Inc."
+HALO,Halozyme Therapeutics
+BGNE,BeiGene
+AMGN,Amgen
+REGN,Regeneron Pharmaceuticals
+INSM,Insmed Incorporated
+TAK,Takeda
+VRTX,Vertex Pharmaceuticals Incorporated
+MDT,Medtronic
+ATHA,Athira Pharma
+BIIB,Biogen
+BMRN,BioMarin Pharmaceutical
+AMPH,"Amphastar Pharmaceuticals, Inc."
+LGND,Ligand Pharmaceuticals
+EPOW,Sunrise
+GLPG,Galapagos NV
+CTLT,Catalent
+ENTX,Entera Bio Ltd.
+JAZZ,Jazz Pharmaceuticals
+MASI,Masimo Corporation
+CRDF,Cardiff Oncology
+RLMD,"Relmada Therapeutics, Inc."
+ABBV,AbbVie
+LPTX,"Leap Therapeutics, Inc."
+KPTI,Karyopharm Therapeutics Inc
+SPRO,Spero Therapeutics
+ZIMV,ZimVie
+VERU,Veru Inc.
+ALVR,AlloVir
+LSTA,"Lisata Therapeutics, Inc."
+TCRT,Alaunos Therapeutics
+BDX,"Becton, Dickinson and Company"
+ACAD,ACADIA Pharmaceuticals Inc.
+CMRX,Chimerix
+RCUS,"Arcus Biosciences, Inc."
+GKOS,Glaukos Corporation
+IONS,"Ionis Pharmaceuticals, Inc."
+RDY,Dr. Reddy's Laboratories Limited
+VXRT,Vaxart
+MED,"Medifast, Inc."
+INCY,Incyte Corporation
+VNDA,Vanda Pharmaceuticals
+HRTX,Heron Therapeutics
+GRTS,"Gritstone bio, Inc."
+MRNS,Marinus Pharmaceuticals
+OMER,Omeros Corporation
+TBPH,Theravance Biopharma
+APVO,Aptevo Therapeutics
+MNOV,MediciNova
+USNA,USANA Health Sciences
+SYBX,Synlogic
+ARDX,Ardelyx
+NKTR,Nektar Therapeutics
+XNCR,"Xencor, Inc."
+SVRA,Savara Inc.
+DXCM,"DexCom, Inc."
+LUNG,Pulmonx Corporation
+TNDM,"Tandem Diabetes Care, Inc."
+RCEL,Avita Medical
+BCRX,BioCryst Pharmaceuticals
+DERM,Journey Medical Corporation
+ALLK,Allakos Inc.
+RMD,ResMed
+TOVX,"Theriva Biologics, Inc."
+EXEL,Exelixis
+AIM,AIM ImmunoTech Inc.
+COGT,"Cogent Biosciences, Inc."
+ZBH,Zimmer Biomet
+AXSM,"Axsome Therapeutics, Inc."
+ENTA,"Enanta Pharmaceuticals, Inc"
+BNOX,Bionomics Limited
+AKBA,Akebia Therapeutics
+VIR,"Vir Biotechnology, Inc."
+GMAB,Genmab
+KT,KT Corporation
+PYPD,PolyPid Ltd.
+OGN,Organon
+NGM,"NGM Biopharmaceuticals, Inc"
+FOLD,Amicus Therapeutics
+ANTX,"AN2 Therapeutics, Inc"
+ALPN,"Alpine Immune Sciences, Inc."
+APLS,"Apellis Pharmaceuticals, Inc."
+EIGR,Eiger BioPharmaceuticals
+BNTX,BioNTech SE
+ESPR,"Esperion Therapeutics, Inc."
+CPIX,Cumberland Pharmaceuticals
+TMDX,TransMedics
+ARMP,"Armata Pharmaceuticals, Inc."
+NVAX,Novavax
+ACHV,Achieve Life Sciences
+UTHR,United Therapeutics
+GALT,Galectin Therapeutics Inc.
+LRMR,"Larimar Therapeutics, Inc."
+INO,Inovio Pharmaceuticals
+ICLR,ICON plc
+EW,Edwards Lifesciences
+SUPN,"Supernus Pharmaceuticals, Inc."
+RNXT,Renovo
+HOLX,"Hologic, Inc."
+LIVN,LivaNova
+TGTX,"TG Therapeutics, Inc."
+CRMD,CorMedix
+GERN,Geron Corporation
+AGEN,Agenus Inc.
+VAXX,"Vaxxinity, Inc."
+PTCT,PTC Therapeutics
+CASI,"CASI Pharmaceuticals, Inc."
+ACOR,Acorda Therapeutics
+MGNX,MacroGenics
+THTX,Theratechnologies
+ATRC,"AtriCure, Inc."
+ACRS,"Aclaris Therapeutics, Inc."
+MNKD,Mannkind Corporation
+GTHX,"G1 Therapeutics, Inc."
+KURA,"Kura Oncology, Inc."
+MGPI,"MGP Ingredients, Inc."
+GLMD,Galmed Pharmaceuticals Ltd
+PEP,"PepsiCo, Inc."
+CALT,Calliditas Therapeutics AB
+ONCY,Oncolytics Biotech
+PRLD,Prelude Therapeutics
+BWAY,Brainsway
+CYCN,Cyclerion Therapeutics
+NBIX,Neurocrine Biosciences
+VYGR,Voyager Therapeutics
+CGON,"CG Oncology, Inc."
+AVDL,Avadel
+TMO,"Thermo Fisher Scientific, Inc"
+AAPL,Apple Inc.
+CANF,Can-Fite BioPharma
+ARGX,argenx
+CHD,"Church & Dwight Company, Inc."
+UBX,"Unity Biotechnology, Inc."
+MIRM,"Mirum Pharmaceuticals, Inc."
+SRPT,"Sarepta Therapeutics, Inc."
+IMNN,Imunon
+IRWD,"Ironwood Pharmaceuticals, Inc."
+OCUP,"Ocuphire Pharma, Inc."
+DVAX,Dynavax Technologies Corporation
+DXR,Daxor Corporation
+LH,Laboratory Corporation of America
+INSP,"Inspire Medical Systems, Inc."
+MOR,MorphoSys AG
+AVGR,"Avinger, Inc."
+AVIR,"Atea Pharmaceuticals, Inc."
+FGEN,FibroGen
+CERS,Cerus Corporation
+ISRG,Intuitive Surgical
+CHEK,Check-Cap Ltd.
+LXRX,Lexicon Pharmaceuticals
+IPHA,Innate Pharma
+DMAC,DiaMedica Therapeutics Inc
+TXMD,TherapeuticsMD
+RIGL,Rigel Pharmaceuticals
+CYTK,Cytokinetics
+XFOR,X4 Pharmaceuticals
+NUWE,"Nuwellis, Inc."
+SIBN,"SI-BONE, Inc."
+TEVA,Teva Pharma
+SIGA,SIGA Technologies
+CRIS,"Curis, Inc."
+PRGO,Perrigo Company
+PLX,Protalix
+WINT,Windtree Therapeutics
+RVNC,"Revance Therapeutics, Inc."
+TSVT,2seventy bio
+MRO,Marathon Oil Corporation
+ORGO,Organogenesis
+OVID,Ovid Therapeutics Inc.
+LGVN,Longeveron Inc.
+IBRX,"ImmunityBio, Inc."
+UNH,UnitedHealth Group
+FBRX,Forte
+VTRS,Viatris Inc.
+CAH,Cardinal Health
+PMVP,"PMV Pharmaceuticals, Inc"
+MOLN,Molecular Partners AG
+VKTX,"Viking Therapeutics, Inc."
+CADL,"Candel Therapeutics, Inc."
+VTVT,vTv Therapeutics
+YMAB,Y-mAbs Therapeutics
+AADI,"Aadi Bioscience, Inc."
+WMT,Walmart
+ALNY,Alnylam Pharmaceuticals
+CARA,"Cara Therapeutics, Inc."
+CGC,Canopy Growth Corporation
+ICCM,IceCure Medical Ltd.
+SGMO,Sangamo Therapeutics
+PHAT,"Phathom Pharmaceuticals, Inc."
+ALRN,"Aileron Therapeutics, Inc."
+DNLI,Denali Therapeutics Inc.
+SNDX,Syndax Pharmaceuticals
+TARS,"Tarsus Pharmaceuticals, Inc."
+SWAV,"Shockwave Medical, Inc."
+HAE,Haemonetics Corporation
+CLDX,Celldex Therapeutics
+CRVS,"Corvus Pharmaceuticals, Inc."
+ABUS,Arbutus Biopharma Corporation
+BLUE,bluebird bio
+KMB,Kimberly-Clark Corporation
+ATRA,Atara Biotherapeutics
+PODD,Insulet Corporation
+DRRX,Durect
+ONTX,"Onconova Therapeutics, Inc."
+ADAP,Adaptimmune
+URGN,UroGen Pharma Ltd.
+TFX,Teleflex
+KZIA,Kazia Therapeutics Limited
+INTC,Intel Corporation
+MACK,Merrimack Pharmaceuticals
+VRNA,Verona Pharma plc
+NERV,Minerva Neurosciences
+XOM,Exxon Mobil
+CVRX,"CVRx, Inc."
+LCTX,"Lineage Cell Therapeutics, Inc."
+NEPT,Neptune
+GRTX,"Galera Therapeutics, Inc."
+SNGX,Soligenix
+RXST,"RxSight, Inc."
+RYTM,"Rhythm Pharmaceuticals, Inc."
+CVAC,CureVac
+ABCL,AbCellera Biologics Inc.
+ASMB,Assembly Biosciences
+EWTX,"Edgewise Therapeutics, Inc."
+ETNB,"89bio, Inc."
+ATNM,Actinium Pharmaceuticals
+RARE,Ultragenyx Pharmaceutical Inc
+GNLX,Genelux Corporation
+INGR,Ingredion Incorporated
+SPRB,Spruce Biosciences
+BPMC,Blueprint Medicines Corporation
+MCRB,"Seres Therapeutics, Inc."
+DBVT,DBV Technologies
+AFIB,Acutus Medical
+ARWR,Arrowhead Pharmaceuticals
+SAGE,Sage Therapeutics
+AEON,"AEON Biopharma, Inc."
+KRTX,Karuna Therapeutics
+PLRX,"Pliant Therapeutics, Inc."
+APYX,Apyx Medical
+CSBR,Champions Oncology
+VTGN,"VistaGen Therapeutics, Inc."
+PTN,"Palatin Technologies, Inc"
+XENE,Xenon Pharmaceuticals Inc.
+MDGL,"Madrigal Pharmaceuticals, Inc."
+ICU,SeaStar Medical
+HSY,The Hershey Company
+NLSP,NLS Pharmaceutics
+PTGX,"Protagonist Therapeutics, Inc."
+ADAG,Adagene Inc
+SAVA,"Cassava Sciences, Inc."
+MYGN,"Myriad Genetics, Inc."
+CTXR,"Citius Pharmaceuticals, Inc."
+NKE,Nike
+ANAB,"AnaptysBio, Inc."
+COCP,"Cocrystal Pharma, Inc."
+AVXL,Anavex Life Sciences Corp.
+NBY,"NovaBay Pharmaceuticals, Inc."
+EGRX,"Eagle Pharmaceuticals, Inc."
+NVRO,Nevro Corp
+RNA,"Avidity Biosciences, Inc."
+ANRO,Alto Neuroscience
+AGRX,Agile Therapeutics
+ADVM,"Adverum Biotechnologies, Inc."
+GIS,General Mills
+KNSA,"Kiniksa Pharmaceuticals, Ltd."
+MMSI,"Merit Medical Systems, Inc."
+NAMS,NewAmsterdam Pharma
+ENSC,Ensysce Biosciences
+CLRB,"Cellectar Biosciences, Inc."
+CMPS,COMPASS Pathways
+PRQR,ProQR Therapeutics
+AYTU,"Aytu BioPharma, Inc."
+PBLA,"Panbela Therapeutics, Inc."
+KZR,"Kezar Life Sciences, Inc."
+NRSN,NeuroSense Therapeutics Ltd.
+IOBT,IO Biotech
+LWAY,"Lifeway Foods, Inc."
+ADMA,"ADMA Biologics, Inc."
+TLRY,Tilray
+BLTE,"Belite Bio, Inc"
+ASND,Ascendis Pharma A/S
+NURO,"NeuroMetrix, Inc."
+BRNS,Barinthus Biotherapeutics
+EQ,Equillium
+EDAP,EDAP TMS S.A.
+DC,Dako
+VEEV,Veeva Systems
+INBX,"Inhibrx, Inc."
+ACIU,AC Immune SA
+ALIM,Alimera Sciences
+SMMT,Summit Therapeutics
+VCEL,Vericel Corporation
+TRVI,Trevi Therapeutics
+RGEN,Repligen Corporation
+BPTH,"Bio-Path Holdings, Inc."
+IOVA,"Iovance Biotherapeutics, Inc."
+HSCS,"Heart Test Laboratories, Inc."
+WVE,Wave Life Sciences Ltd.
+PRCT,PROCEPT BioRobotics
+IRTC,"iRhythm Technologies, Inc."
+RNAC,Cartesian Therapeutics
+OTLK,"Outlook Therapeutics, Inc."
+STXS,Stereotaxis
+NARI,Inari Medical
+EVOK,Evoke Pharma
+SRTS,Sensus
+PGEN,"Precigen, Inc"
+LIXT,"Lixte Biotechnology Holdings, Inc."
+DRMA,Dermata Therapeutics
+EYPT,"EyePoint Pharmaceuticals, Inc."
+SNSE,"Sensei Biotherapeutics, Inc."
+MRKR,"Marker Therapeutics, Inc."
+ALT,"Altimmune, Inc."
+CPRX,"Catalyst Pharmaceuticals, Inc."
+LPCN,Lipocine Inc.
+TIVC,Tivic Health Systems
+DRCT,Direct Digital
+VERO,Venus Concept
+PRAX,Praxis Precision Medicines
+PRTC,PureTech
+BMRA,Biomerica
+PCVX,"Vaxcyte, Inc."
+ACN,Accenture
+TCMD,"Tactile Systems Technology, Inc."
+PCSA,Processa Pharmaceuticals
+SILK,Silk Road Medical
+SCS,Steelcase
+CGTX,Cognition Therapeutics
+NMRA,"Neumora Therapeutics, Inc."
+EOLS,"Evolus, Inc."
+COLL,"Collegium Pharmaceutical, Inc."
+SNCE,Science 37
+APRE,Aprea Therapeutics
+MDWD,MediWound Ltd
+FATE,Fate Therapeutics
+IKT,"Inhibikase Therapeutics, Inc."
+OCS,Oculis
+OPT,Opthea Limited
+ALZN,"Alzamend Neuro, Inc."
+AKRO,"Akero Therapeutics, Inc"
+HARP,Harpoon Therapeutics
+ALGN,"Align Technology, Inc."
+ILMN,"Illumina, Inc."
+KRYS,"Krystal Biotech, Inc."
+MYMD,"MyMD Pharmaceuticals, Inc."
+ELMD,"Electromed, Inc."
+TALK,Talkspace
+TFFP,"TFF Pharmaceuticals, Inc."
+KOD,Kodiak Sciences Inc
+RSLS,ReShape Lifesciences
+PAVM,PAVmed Inc.
+HEPA,"Hepion Pharmaceuticals, Inc."
+FWBI,"First Wave BioPharma, Inc."
+AVTX,"Avalo Therapeutics, Inc."
+TTNP,Titan Pharmaceuticals
+LIFE,"aTyr Pharma, Inc."
+BIVI,BioVie Inc.
+VRCA,Verrica Pharmaceuticals Inc.
+AQST,Aquestive Therapeutics
+CALC,"CalciMedica, Inc."
+MEIP,"MEI Pharma, Inc."
+NATR,"Nature's Sunshine Products, Inc."
+SGMT,Sagimet Biosciences Inc.
+LYRA,Lyra Therapeutics
+ENLV,Enlivex Therapeutics Ltd.
+NKGN,"NKGen Biotech, Inc."
+ALLR,Allarity Therapeutics
+CYCCP,"Cyclacel Pharmaceuticals, Inc."
+ATXI,"Avenue Therapeutics, Inc."
+ZVRA,Zevra Therapeutics
+BTTX,Better Therapeutics
+CRSP,CRISPR Therapeutics AG
+RVMD,"Revolution Medicines, Inc."
+VIRC,Virco
+CLSD,"Clearside Biomedical, Inc."
+FULC,Fulcrum Therapeutics
+CNMD,CONMED Corporation
+OM,Outset Medical
+BFLY,Butterfly Network
+CATX,Perspective Therapeutics
+FEMY,Femasys Inc.
+ARAY,Accuray Incorporated
+EKSO,Ekso Bionics
+VIRX,"Viracta Therapeutics, Inc."
+HUM,Humana Inc.
+INTS,"Intensity Therapeutics, Inc."
+BETZ,Ro
+BEAM,Beam
+BIO,Bio-Rad Laboratories
+GHSI,"Guardion Health Sciences, Inc."
+RGLS,Regulus Therapeutics Inc.
+FBRX,"Forte Biosciences, Inc."
+NBTX,Nanobiotix
+SPRY,"ARS Pharmaceuticals, Inc."
+STTK,"Shattuck Labs, Inc."
+ABOS,Acumen Pharmaceuticals
+SEEL,"Seelos Therapeutics, Inc."
+NTRA,"Natera, Inc."
+ANEB,Anebulo Pharmaceuticals
+AXNX,"Axonics, Inc."
+HUMA,"Humacyte, Inc."
+RAPT,"RAPT Therapeutics, Inc."
+AURA,Aura Biosciences
+TVTX,"Travere Therapeutics, Inc."
+SYRS,Syros Pharmaceuticals
+NSPR,InspireMD
+OCGN,Ocugen
+NXTC,"NextCure, Inc."
+RGNX,REGENXBIO Inc.
+MSFT,Microsoft Corporation
+PIRS,"Pieris Pharmaceuticals, Inc."
+TENX,"Tenax Therapeutics, Inc."
+KPRX,"Kiora Pharmaceuticals, Inc."
+EXAS,Exact Sciences Corporation
+ERAS,"Erasca, Inc."
+MBRX,"Moleculin Biotech, Inc."
+CTMX,CytomX Therapeutics
+SMLR,Semler Scientific
+SPRC,SciSparc
+CDNA,CareDx
+DTIL,"Precision BioSciences, Inc."
+ALUR,Allurion Technologies
+BPTS,Biophytis
+INKT,MiNK Therapeutics
+APLT,"Applied Therapeutics, Inc."
+KYMR,"Kymera Therapeutics, Inc."
+EQX,Equinox
+BDSX,"Biodesix, Inc."
+MRSN,Mersana Therapeutics
+ATOS,"Atossa Therapeutics, Inc."
+BCDA,"BioCardia, Inc."
+CYTH,"Cyclo Therapeutics, Inc."
+SONN,Sonnet BioTherapeutics
+DSGN,"Design Therapeutics, Inc."
+IRON,"Disc Medicine, Inc"
+SLNO,"Soleno Therapeutics, Inc."
+RNXT,RenovoRx
+ALGS,Aligos Therapeutics
+RVPH,Reviva Pharmaceuticals
+VIRI,"Virios Therapeutics, Inc."
+NUS,Nu Skin Enterprises
+VERA,"Vera Therapeutics, Inc."
+XCUR,"Exicure, Inc."
+CELC,Celcuity Inc
+ADIL,Adial Pharmaceuticals
+CKPT,"Checkpoint Therapeutics, Inc."
+MIST,Miles
