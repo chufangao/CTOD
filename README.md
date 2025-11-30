@@ -1,3 +1,5 @@
+# DEPRECATED, PLEASE SEEE https://github.com/sunlabuiuc/CTO
+
 <p align="center"><img src="./CTO.png"/></p>
 
 # CTO
